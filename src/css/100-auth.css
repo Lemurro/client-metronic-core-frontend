@@ -1,0 +1,17 @@
+/*
+//  .d8b.  db    db d888888b db   db
+// d8' `8b 88    88 `~~88~~' 88   88
+// 88ooo88 88    88    88    88ooo88
+// 88~~~88 88    88    88    88~~~88
+// 88   88 88b  d88    88    88   88
+// YP   YP ~Y8888P'    YP    YP   YP
+//
+//
+*/
+.auth__logo {
+    text-align: center;
+}
+
+.auth__logo img {
+    width: 80%;
+}
