@@ -22,7 +22,7 @@ guide.edit = function (id, callback) {
             $('#js-guide__button-insert').hide();
             $('#js-guide__button-save').show();
 
-            $('#js-tab-form-button').html('<i class="fa fa-pencil"></i> Редактировать');
+            $('#js-tab-form-button').html('<i class="fas fa-pencil-alt"></i> Редактировать');
 
             tabs.tabInsertEdit('show');
 

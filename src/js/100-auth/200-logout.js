@@ -6,7 +6,7 @@
  */
 auth.logout = function () {
     helper.showConfirm('Выход', 'Вы действительно хотите выйти из системы?', 'Да', 'Нет', null, null, function () {
-        $('.js-user-data').html('<i class="fa fa-spinner fa-pulse"></i>');
+        $('.js-user-data').html('<i class="fas fa-spinner fa-pulse"></i>');
         localforage.clear();
         bootstrap.sessionID = '';
         bootstrap.authScreen('show');

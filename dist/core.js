@@ -382,64 +382,11 @@ auth.getCode = function () {
  */
 auth.logout = function () {
     helper.showConfirm('Выход', 'Вы действительно хотите выйти из системы?', 'Да', 'Нет', null, null, function () {
-        $('.js-user-data').html('<i class="fa fa-spinner fa-pulse"></i>');
+        $('.js-user-data').html('<i class="fas fa-spinner fa-pulse"></i>');
         localforage.clear();
         bootstrap.sessionID = '';
         bootstrap.authScreen('show');
     }, null);
-};
-/**
- * Операции с табами
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-var tabs = {};
-/**
- * Покажем указанный таб
- *
- * @param {string} tabID Идентификатор нужного таба
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-tabs.showTab = function (tabID) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    tabsLinks.find('.nav-link').removeClass('active show');
-    tabsContents.find('.tab-pane').removeClass('active show');
-
-    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
-    tabsContents.find('#' + tabID).addClass('active show');
-};
-/**
- * Скрыть\Показать вторую вкладку
- *
- * @param {string} action Действие (show|hide)
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-tabs.tabInsertEdit = function (action) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    if (action === 'show') {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
-        tabsContents.find('#tab-form').addClass('active show');
-        tabs.showTab('tab-form');
-    } else {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
-        tabsContents.find('#tab-form').removeClass('active show');
-        tabs.showTab('tab-list');
-    }
 };
 /**
  * Хелперы
@@ -515,6 +462,59 @@ helper.showConfirm = function (title, content, confirmButtonText, cancelButtonTe
             }
         }
     });
+};
+/**
+ * Операции с табами
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+var tabs = {};
+/**
+ * Покажем указанный таб
+ *
+ * @param {string} tabID Идентификатор нужного таба
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+tabs.showTab = function (tabID) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    tabsLinks.find('.nav-link').removeClass('active show');
+    tabsContents.find('.tab-pane').removeClass('active show');
+
+    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
+    tabsContents.find('#' + tabID).addClass('active show');
+};
+/**
+ * Скрыть\Показать вторую вкладку
+ *
+ * @param {string} action Действие (show|hide)
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+tabs.tabInsertEdit = function (action) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    if (action === 'show') {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
+        tabsContents.find('#tab-form').addClass('active show');
+        tabs.showTab('tab-form');
+    } else {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
+        tabsContents.find('#tab-form').removeClass('active show');
+        tabs.showTab('tab-list');
+    }
 };
 /**
  * Операции со справочниками
@@ -613,7 +613,7 @@ guide.edit = function (id, callback) {
             $('#js-guide__button-insert').hide();
             $('#js-guide__button-save').show();
 
-            $('#js-tab-form-button').html('<i class="fa fa-pencil"></i> Редактировать');
+            $('#js-tab-form-button').html('<i class="fas fa-pencil-alt"></i> Редактировать');
 
             tabs.tabInsertEdit('show');
 
@@ -717,7 +717,7 @@ guide.showInsertForm = function (callback) {
     $('#js-guide__button-insert').show();
     $('#js-guide__button-save').hide();
 
-    $('#js-tab-form-button').html('<i class="fa fa-plus"></i> Добавить');
+    $('#js-tab-form-button').html('<i class="fas fa-plus"></i> Добавить');
 
     tabs.tabInsertEdit('show');
 
@@ -760,7 +760,7 @@ usersCore.edit = function (id, callback) {
             $('#js-user__button-insert').hide();
             $('#js-user__button-save').show();
 
-            $('#js-tab-form-button').html('<i class="fa fa-pencil"></i> Редактировать');
+            $('#js-tab-form-button').html('<i class="fas fa-pencil-alt"></i> Редактировать');
 
             tabs.tabInsertEdit('show');
 
@@ -887,7 +887,7 @@ usersCore.showInsertForm = function (callback) {
     $('#js-user__button-insert').show();
     $('#js-user__button-save').hide();
 
-    $('#js-tab-form-button').html('<i class="fa fa-plus"></i> Добавить');
+    $('#js-tab-form-button').html('<i class="fas fa-plus"></i> Добавить');
 
     tabs.tabInsertEdit('show');
 

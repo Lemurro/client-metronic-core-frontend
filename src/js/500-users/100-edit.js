@@ -22,7 +22,7 @@ usersCore.edit = function (id, callback) {
             $('#js-user__button-insert').hide();
             $('#js-user__button-save').show();
 
-            $('#js-tab-form-button').html('<i class="fa fa-pencil"></i> Редактировать');
+            $('#js-tab-form-button').html('<i class="fas fa-pencil-alt"></i> Редактировать');
 
             tabs.tabInsertEdit('show');
 

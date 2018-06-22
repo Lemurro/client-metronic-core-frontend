@@ -16,7 +16,7 @@ guide.showInsertForm = function (callback) {
     $('#js-guide__button-insert').show();
     $('#js-guide__button-save').hide();
 
-    $('#js-tab-form-button').html('<i class="fa fa-plus"></i> Добавить');
+    $('#js-tab-form-button').html('<i class="fas fa-plus"></i> Добавить');
 
     tabs.tabInsertEdit('show');
 

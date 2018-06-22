@@ -16,7 +16,7 @@ usersCore.showInsertForm = function (callback) {
     $('#js-user__button-insert').show();
     $('#js-user__button-save').hide();
 
-    $('#js-tab-form-button').html('<i class="fa fa-plus"></i> Добавить');
+    $('#js-tab-form-button').html('<i class="fas fa-plus"></i> Добавить');
 
     tabs.tabInsertEdit('show');
 
