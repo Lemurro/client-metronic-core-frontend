@@ -10,9 +10,6 @@
 */
 
 body {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 400;
-    font-size: 14px;
     background-color: #eaeaea;
 }
 
@@ -22,16 +19,6 @@ body {
 
 .m-error-1 .m-error_container .m-error_desc {
     margin-left: 0;
-}
-
-.tooltip,
-.popover,
-.btn,
-.btn.m-btn--custom,
-.m-portlet.m-portlet--creative .m-portlet__head .m-portlet__head-caption .m-portlet__head-title .m-portlet__head-text,
-.vakata-context,
-.vakata-context ul {
-    font-family: 'Roboto', sans-serif;
 }
 
 .nav.nav-pills, .nav.nav-tabs {
