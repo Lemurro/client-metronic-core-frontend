@@ -1,22 +1,38 @@
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 13.05.2018
+ * @version 03.07.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 bootstrap.initPage = function () {
-    bootstrap.settings.onLoad();
+    bootstrap.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
+        if (result.hasOwnProperty('errors')) {
+            bootstrap.showErrors(result.errors);
+        } else {
+            if (result.data.admin) {
+                $('#m_header_menu').find('.js-role').show();
+            } else {
+                for (var pageID in result.data.roles) {
+                    if (result.data.roles[pageID].indexOf('read') !== -1) {
+                        $('#m_header_menu').find('.js-role__' + pageID).show();
+                    }
+                }
+            }
 
-    var page = $('#js-page');
+            bootstrap.settings.onLoad(result.data);
 
-    if (page.length > 0) {
-        var pageScript = window[page.attr('data-page')];
+            var page = $('#js-page');
 
-        if (pageScript !== undefined) {
-            if (pageScript.hasOwnProperty('init')) {
+            if (page.length > 0) {
+                var pageScript = window[page.attr('data-page')];
 
-                pageScript.init();
+                if (pageScript !== undefined) {
+                    if (pageScript.hasOwnProperty('init')) {
+
+                        pageScript.init();
+                    }
+                }
             }
         }
-    }
+    });
 };

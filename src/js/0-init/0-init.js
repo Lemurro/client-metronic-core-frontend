@@ -1,7 +1,7 @@
 /**
  * Загрузочный скрипт приложения
  *
- * @version 13.05.2018
+ * @version 03.07.2018
  * @author Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -38,12 +38,12 @@ bootstrap.lightajax = {};
  *
  * @param {object} options Параметры
  *
- * @version 13.05.2018
+ * @version 03.07.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 bootstrap.init = function (options) {
     bootstrap.settings = Object.assign({
-        onLoad: function () {
+        onLoad: function (data) {
             // Выполняет код после загрузки приложения, перед загрузкой страницы
         }
     }, options);
