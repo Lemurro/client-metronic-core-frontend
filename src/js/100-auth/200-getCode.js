@@ -1,7 +1,7 @@
 /**
  * Получение кода
  *
- * @version 13.05.2018
+ * @version 24.07.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 auth.getCode = function () {
@@ -13,6 +13,10 @@ auth.getCode = function () {
         if (result.hasOwnProperty('errors')) {
             bootstrap.showErrors(result.errors);
         } else {
+            if (result.data.hasOwnProperty('message')) {
+                console.log(result.data.message, 'AuthCode');
+            }
+
             var formCode = $('#js-auth__check-form');
 
             formCode.find('.js-timer').show();
