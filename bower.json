@@ -1,9 +1,0 @@
-{
-  "name": "lemurro-client-metronic-core-frontend",
-  "description": "Javascript-ядро для Lemurro Web Client",
-  "homepage": "https://github.com/Lemurro/client-metronic-core-frontend",
-  "authors": [
-    "DimNS <atomcms@ya.ru>"
-  ],
-  "license": "MIT"
-}
