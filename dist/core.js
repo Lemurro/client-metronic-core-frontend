@@ -264,6 +264,81 @@ bootstrap.showErrors = function (errors) {
     }
 };
 /**
+ * Хелперы
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+var helper = {};
+/**
+ * Очистка формы
+ *
+ * @param {object} container jQuery-объект контейнера
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+helper.clearFields = function (container) {
+    container.find('input[type="text"],input[type="password"],input[type="email"],input[type="number"],input[type="tel"],input[type="url"],input[type="date"],input[type="time"]')
+        .val('');
+
+    container.find('textarea').val('');
+
+    container.find('select').each(function () {
+        $(this).val(null).trigger('change');
+    });
+
+    container.find('input[type="checkbox"]').each(function () {
+        $(this).prop('checked', false);
+    });
+
+    container.find('input[type="radio"]').each(function () {
+        $(this).prop('checked', false);
+    });
+};
+/**
+ * Покажем подтверждение
+ *
+ * @param {string}   title              Заголовок
+ * @param {string}   content            HTML-Содержимое
+ * @param {string}   confirmButtonText  Текст кнопки "OK"
+ * @param {string}   cancelButtonText   Текст кнопки "Cancel"
+ * @param {function} callbackOpen       Функция при открытии формы
+ * @param {function} callbackPreConfirm Функция перед вызовом callbackConfirm
+ * @param {function} callbackConfirm    Функция при нажатии confirmButton
+ * @param {function} callbackCancel     Функция при нажатии cancelButton
+ *
+ * @version 13.05.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+helper.showConfirm = function (title, content, confirmButtonText, cancelButtonText, callbackOpen, callbackPreConfirm, callbackConfirm, callbackCancel) {
+    swal({
+        title            : title,
+        html             : content,
+        type             : '',
+        allowOutsideClick: false,
+        showCancelButton : true,
+        confirmButtonText: confirmButtonText,
+        cancelButtonText : cancelButtonText,
+        onOpen           : callbackOpen,
+        preConfirm       : callbackPreConfirm
+    }).then(function (result) {
+        if (result.value) {
+            callbackConfirm();
+        } else {
+            if (callbackCancel !== null) {
+                callbackCancel();
+            }
+        }
+    });
+};
+/**
  * Проверка сессии при запуске приложения
  *
  * @version 13.05.2018
@@ -409,7 +484,7 @@ auth.logout = function () {
     }, null);
 };
 /**
- * Хелперы
+ * Операции с табами
  *
  * @version 13.05.2018
  * @author Дмитрий Щербаков <atomcms@ya.ru>
@@ -420,68 +495,46 @@ auth.logout = function () {
  *
  * @type {object}
  */
-var helper = {};
+var tabs = {};
 /**
- * Очистка формы
+ * Покажем указанный таб
  *
- * @param {object} container jQuery-объект контейнера
+ * @param {string} tabID Идентификатор нужного таба
  *
  * @version 13.05.2018
  * @author Дмитрий Щербаков <atomcms@ya.ru>
  */
-helper.clearFields = function (container) {
-    container.find('input[type="text"],input[type="password"],input[type="email"],input[type="number"],input[type="tel"],input[type="url"],input[type="date"],input[type="time"]')
-        .val('');
+tabs.showTab = function (tabID) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
 
-    container.find('textarea').val('');
+    tabsLinks.find('.nav-link').removeClass('active show');
+    tabsContents.find('.tab-pane').removeClass('active show');
 
-    container.find('select').each(function () {
-        $(this).val(null).trigger('change');
-    });
-
-    container.find('input[type="checkbox"]').each(function () {
-        $(this).prop('checked', false);
-    });
-
-    container.find('input[type="radio"]').each(function () {
-        $(this).prop('checked', false);
-    });
+    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
+    tabsContents.find('#' + tabID).addClass('active show');
 };
 /**
- * Покажем подтверждение
+ * Скрыть\Показать вторую вкладку
  *
- * @param {string}   title              Заголовок
- * @param {string}   content            HTML-Содержимое
- * @param {string}   confirmButtonText  Текст кнопки "OK"
- * @param {string}   cancelButtonText   Текст кнопки "Cancel"
- * @param {function} callbackOpen       Функция при открытии формы
- * @param {function} callbackPreConfirm Функция перед вызовом callbackConfirm
- * @param {function} callbackConfirm    Функция при нажатии confirmButton
- * @param {function} callbackCancel     Функция при нажатии cancelButton
+ * @param {string} action Действие (show|hide)
  *
  * @version 13.05.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
  */
-helper.showConfirm = function (title, content, confirmButtonText, cancelButtonText, callbackOpen, callbackPreConfirm, callbackConfirm, callbackCancel) {
-    swal({
-        title            : title,
-        html             : content,
-        type             : '',
-        allowOutsideClick: false,
-        showCancelButton : true,
-        confirmButtonText: confirmButtonText,
-        cancelButtonText : cancelButtonText,
-        onOpen           : callbackOpen,
-        preConfirm       : callbackPreConfirm
-    }).then(function (result) {
-        if (result.value) {
-            callbackConfirm();
-        } else {
-            if (callbackCancel !== null) {
-                callbackCancel();
-            }
-        }
-    });
+tabs.tabInsertEdit = function (action) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    if (action === 'show') {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
+        tabsContents.find('#tab-form').addClass('active show');
+        tabs.showTab('tab-form');
+    } else {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
+        tabsContents.find('#tab-form').removeClass('active show');
+        tabs.showTab('tab-list');
+    }
 };
 /**
  * Операции со справочниками
@@ -689,59 +742,6 @@ guide.showInsertForm = function (callback) {
     tabs.tabInsertEdit('show');
 
     callback();
-};
-/**
- * Операции с табами
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-var tabs = {};
-/**
- * Покажем указанный таб
- *
- * @param {string} tabID Идентификатор нужного таба
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-tabs.showTab = function (tabID) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    tabsLinks.find('.nav-link').removeClass('active show');
-    tabsContents.find('.tab-pane').removeClass('active show');
-
-    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
-    tabsContents.find('#' + tabID).addClass('active show');
-};
-/**
- * Скрыть\Показать вторую вкладку
- *
- * @param {string} action Действие (show|hide)
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-tabs.tabInsertEdit = function (action) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    if (action === 'show') {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
-        tabsContents.find('#tab-form').addClass('active show');
-        tabs.showTab('tab-form');
-    } else {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
-        tabsContents.find('#tab-form').removeClass('active show');
-        tabs.showTab('tab-list');
-    }
 };
 /**
  * Работа с пользователями

@@ -68,7 +68,7 @@ body {
     border-top: 0;
 }
 
-.btn {
+.btn:not(.btn-sm) {
     padding: .75rem 1.15rem;
 }
 
