@@ -264,6 +264,153 @@ bootstrap.showErrors = function (errors) {
     }
 };
 /**
+ * Проверка сессии при запуске приложения
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+var auth = {};
+
+/**
+ * ИД таймера
+ *
+ * @type {int|null}
+ *
+ * @private
+ */
+auth._timerID = null;
+/**
+ * Запуск таймера
+ *
+ * @version 13.05.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+auth._runTimer = function () {
+    if (auth._timerID !== null) {
+        clearInterval(auth._timerID);
+    }
+
+    auth._timerID = setInterval(function () {
+        var formCode  = $('#js-auth__check-form');
+        var elemTimer = formCode.find('.js-timer__count');
+        var count     = parseInt(elemTimer.text(), 10);
+
+        if (count > 0) {
+            elemTimer.text(--count);
+        } else {
+            clearInterval(auth._timerID);
+            formCode.find('.js-timer').hide();
+            formCode.find('.js-resend').show();
+        }
+    }, 1000);
+};
+/**
+ * Проверка сессии
+ *
+ * @version 13.05.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+auth.check = function () {
+    bootstrap.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
+        bootstrap.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            bootstrap.showErrors(result.errors);
+        } else {
+            $('.js-user__auth-id').text(result.data.user.auth_id);
+
+            bootstrap.initPage();
+        }
+    });
+};
+/**
+ * Проверка введенного кода
+ *
+ * @version 26.07.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+auth.checkCode = function () {
+    var browser = bowser.getParser(window.navigator.userAgent);
+
+    bootstrap.lightajax.post(true, pathServerAPI + 'auth/code', {
+        'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
+        'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
+        'device_info': {
+            uuid        : 'WebApp',
+            platform    : browser.os.name,
+            version     : browser.os.version,
+            manufacturer: browser.browser.name,
+            model       : browser.browser.version
+        }
+    }, function (result) {
+        bootstrap.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            $('#js-auth__check-form').find('input[name="auth_code"]').val('');
+
+            bootstrap.showErrors(result.errors);
+        } else {
+            localforage.setItem('sessionID', result.data.session, function () {
+                bootstrap.sessionID = result.data.session;
+                bootstrap.authScreen('hide');
+                auth.check();
+            });
+        }
+    });
+};
+/**
+ * Получение кода
+ *
+ * @version 24.07.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+auth.getCode = function () {
+    bootstrap.lightajax.get(true, pathServerAPI + 'auth/code', {
+        'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
+    }, function (result) {
+        bootstrap.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            bootstrap.showErrors(result.errors);
+        } else {
+            if (result.data.hasOwnProperty('message')) {
+                console.log(result.data.message, 'AuthCode');
+            }
+
+            var formCode = $('#js-auth__check-form');
+
+            formCode.find('.js-timer').show();
+            formCode.find('.js-timer__count').text('60');
+            formCode.find('.js-resend').hide();
+
+            auth._runTimer();
+
+            $('#js-auth__get-form').hide();
+            formCode.show();
+        }
+    });
+};
+/**
+ * Сброс сессии
+ *
+ * @version 13.05.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+auth.logout = function () {
+    helper.showConfirm('Выход', 'Вы действительно хотите выйти из системы?', 'Да', 'Нет', null, null, function () {
+        $('.js-user-data').html('<i class="fas fa-spinner fa-pulse"></i>');
+        localforage.clear();
+        bootstrap.sessionID = '';
+        bootstrap.authScreen('show');
+    }, null);
+};
+/**
  * Хелперы
  *
  * @version 13.05.2018
@@ -337,151 +484,6 @@ helper.showConfirm = function (title, content, confirmButtonText, cancelButtonTe
             }
         }
     });
-};
-/**
- * Проверка сессии при запуске приложения
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-var auth = {};
-
-/**
- * ИД таймера
- *
- * @type {int|null}
- *
- * @private
- */
-auth._timerID = null;
-/**
- * Запуск таймера
- *
- * @version 13.05.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-auth._runTimer = function () {
-    if (auth._timerID !== null) {
-        clearInterval(auth._timerID);
-    }
-
-    auth._timerID = setInterval(function () {
-        var formCode  = $('#js-auth__check-form');
-        var elemTimer = formCode.find('.js-timer__count');
-        var count     = parseInt(elemTimer.text(), 10);
-
-        if (count > 0) {
-            elemTimer.text(--count);
-        } else {
-            clearInterval(auth._timerID);
-            formCode.find('.js-timer').hide();
-            formCode.find('.js-resend').show();
-        }
-    }, 1000);
-};
-/**
- * Проверка сессии
- *
- * @version 13.05.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-auth.check = function () {
-    bootstrap.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
-        bootstrap.lightajax.preloader('hide');
-
-        if (result.hasOwnProperty('errors')) {
-            bootstrap.showErrors(result.errors);
-        } else {
-            $('.js-user__auth-id').text(result.data.user.auth_id);
-
-            bootstrap.initPage();
-        }
-    });
-};
-/**
- * Проверка введенного кода
- *
- * @version 13.05.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-auth.checkCode = function () {
-    bootstrap.lightajax.post(true, pathServerAPI + 'auth/code', {
-        'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
-        'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
-        'device_info': {
-            uuid        : 'WebApp',
-            platform    : bowser.osname,
-            version     : bowser.osversion,
-            manufacturer: bowser.name,
-            model       : bowser.version
-        }
-    }, function (result) {
-        bootstrap.lightajax.preloader('hide');
-
-        if (result.hasOwnProperty('errors')) {
-            $('#js-auth__check-form').find('input[name="auth_code"]').val('');
-
-            bootstrap.showErrors(result.errors);
-        } else {
-            localforage.setItem('sessionID', result.data.session, function () {
-                bootstrap.sessionID = result.data.session;
-                bootstrap.authScreen('hide');
-                auth.check();
-            });
-        }
-    });
-};
-/**
- * Получение кода
- *
- * @version 24.07.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-auth.getCode = function () {
-    bootstrap.lightajax.get(true, pathServerAPI + 'auth/code', {
-        'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
-    }, function (result) {
-        bootstrap.lightajax.preloader('hide');
-
-        if (result.hasOwnProperty('errors')) {
-            bootstrap.showErrors(result.errors);
-        } else {
-            if (result.data.hasOwnProperty('message')) {
-                console.log(result.data.message, 'AuthCode');
-            }
-
-            var formCode = $('#js-auth__check-form');
-
-            formCode.find('.js-timer').show();
-            formCode.find('.js-timer__count').text('60');
-            formCode.find('.js-resend').hide();
-
-            auth._runTimer();
-
-            $('#js-auth__get-form').hide();
-            formCode.show();
-        }
-    });
-};
-/**
- * Сброс сессии
- *
- * @version 13.05.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-auth.logout = function () {
-    helper.showConfirm('Выход', 'Вы действительно хотите выйти из системы?', 'Да', 'Нет', null, null, function () {
-        $('.js-user-data').html('<i class="fas fa-spinner fa-pulse"></i>');
-        localforage.clear();
-        bootstrap.sessionID = '';
-        bootstrap.authScreen('show');
-    }, null);
 };
 /**
  * Операции с табами

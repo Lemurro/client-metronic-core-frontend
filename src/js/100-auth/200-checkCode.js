@@ -1,19 +1,21 @@
 /**
  * Проверка введенного кода
  *
- * @version 13.05.2018
+ * @version 26.07.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 auth.checkCode = function () {
+    var browser = bowser.getParser(window.navigator.userAgent);
+
     bootstrap.lightajax.post(true, pathServerAPI + 'auth/code', {
         'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
         'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
         'device_info': {
             uuid        : 'WebApp',
-            platform    : bowser.osname,
-            version     : bowser.osversion,
-            manufacturer: bowser.name,
-            model       : bowser.version
+            platform    : browser.os.name,
+            version     : browser.os.version,
+            manufacturer: browser.browser.name,
+            model       : browser.browser.version
         }
     }, function (result) {
         bootstrap.lightajax.preloader('hide');
