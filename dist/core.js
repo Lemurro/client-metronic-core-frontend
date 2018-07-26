@@ -343,10 +343,10 @@ auth.checkCode = function () {
         'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
         'device_info': {
             uuid        : 'WebApp',
-            platform    : browser.os.name,
-            version     : browser.os.version,
-            manufacturer: browser.browser.name,
-            model       : browser.browser.version
+            platform    : browser.parsedResult.os.name,
+            version     : browser.parsedResult.os.version,
+            manufacturer: browser.parsedResult.browser.name,
+            model       : browser.parsedResult.browser.version
         }
     }, function (result) {
         bootstrap.lightajax.preloader('hide');
