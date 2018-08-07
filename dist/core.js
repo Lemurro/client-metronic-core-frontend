@@ -188,7 +188,7 @@ bootstrap.authScreen = function (action) {
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 03.07.2018
+ * @version 07.08.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 bootstrap.initPage = function () {
@@ -215,7 +215,6 @@ bootstrap.initPage = function () {
 
                 if (pageScript !== undefined) {
                     if (pageScript.hasOwnProperty('init')) {
-
                         pageScript.init();
                     }
                 }
@@ -541,7 +540,7 @@ tabs.tabInsertEdit = function (action) {
 /**
  * Операции со справочниками
  *
- * @version 13.05.2018
+ * @version 07.08.2018
  * @author Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -553,28 +552,24 @@ tabs.tabInsertEdit = function (action) {
 var guide = {};
 
 /**
- * Тип справочника
- *
- * @type {string}
- */
-guide.type = '';
-
-/**
- * Объект для хранения шаблонов
- *
- * @type {object}
- */
-guide.templates = {};
-
-/**
  * Инициализация
  *
- * @version 13.05.2018
+ * @version 07.08.2018
  * @author Дмитрий Щербаков <atomcms@ya.ru>
  */
 guide.init = function () {
+    /**
+     * Тип справочника
+     *
+     * @type {string}
+     */
     guide.type = $('#js-page').attr('data-type');
 
+    /**
+     * Объект для хранения шаблонов
+     *
+     * @type {object}
+     */
     guide.templates = {
         item: Template7.compile($('#js-tpl-guide__item').html())
     };
@@ -584,7 +579,7 @@ guide.init = function () {
 /**
  * Список элементов справочника
  *
- * @version 13.05.2018
+ * @version 07.08.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 guide._getData = function () {
@@ -607,6 +602,10 @@ guide._getData = function () {
 
                 $('#js-guide__items').html(html);
                 $('#js-guide__list').show();
+            }
+
+            if (guide.hasOwnProperty('initCallback')) {
+                guide.initCallback();
             }
         }
     });

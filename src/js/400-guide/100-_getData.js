@@ -1,7 +1,7 @@
 /**
  * Список элементов справочника
  *
- * @version 13.05.2018
+ * @version 07.08.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 guide._getData = function () {
@@ -24,6 +24,10 @@ guide._getData = function () {
 
                 $('#js-guide__items').html(html);
                 $('#js-guide__list').show();
+            }
+
+            if (guide.hasOwnProperty('initCallback')) {
+                guide.initCallback();
             }
         }
     });
