@@ -1,7 +1,7 @@
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 03.07.2018
+ * @version 07.08.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 bootstrap.initPage = function () {
@@ -28,7 +28,6 @@ bootstrap.initPage = function () {
 
                 if (pageScript !== undefined) {
                     if (pageScript.hasOwnProperty('init')) {
-
                         pageScript.init();
                     }
                 }
