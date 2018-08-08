@@ -1,7 +1,7 @@
 {
   "name": "lemurro-client-metronic-core-frontend",
   "description": "Javascript-ядро для Lemurro Web Client",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "homepage": "https://github.com/Lemurro/client-metronic-core-frontend",
   "author": "DimNS <dimns@dimns.ru>",
   "license": "MIT",
