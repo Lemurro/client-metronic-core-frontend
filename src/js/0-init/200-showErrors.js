@@ -3,14 +3,14 @@
  *
  * @param errors array Массив ошибок
  *
- * @version 13.05.2018
+ * @version 08.08.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 bootstrap.showErrors = function (errors) {
     if (errors.length === 1 && errors[0].status === '401 Unauthorized') {
         bootstrap.authScreen('show');
     } else if (errors.length === 1 && errors[0].status === '403 Forbidden') {
-        location.replace(location.origin + '/403');
+        location.assign(location.origin + '/403');
     } else {
         for (var i in errors) {
             var item  = errors[i];
