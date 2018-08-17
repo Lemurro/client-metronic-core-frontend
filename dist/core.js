@@ -312,13 +312,11 @@ auth._runTimer = function () {
 /**
  * Проверка сессии
  *
- * @version 13.05.2018
+ * @version 17.08.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 auth.check = function () {
-    bootstrap.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
-        bootstrap.lightajax.preloader('hide');
-
+    bootstrap.lightajax.get(false, pathServerAPI + 'auth/check', {}, function (result) {
         if (result.hasOwnProperty('errors')) {
             bootstrap.showErrors(result.errors);
         } else {
@@ -483,59 +481,6 @@ helper.showConfirm = function (title, content, confirmButtonText, cancelButtonTe
             }
         }
     });
-};
-/**
- * Операции с табами
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-var tabs = {};
-/**
- * Покажем указанный таб
- *
- * @param {string} tabID Идентификатор нужного таба
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-tabs.showTab = function (tabID) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    tabsLinks.find('.nav-link').removeClass('active show');
-    tabsContents.find('.tab-pane').removeClass('active show');
-
-    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
-    tabsContents.find('#' + tabID).addClass('active show');
-};
-/**
- * Скрыть\Показать вторую вкладку
- *
- * @param {string} action Действие (show|hide)
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-tabs.tabInsertEdit = function (action) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    if (action === 'show') {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
-        tabsContents.find('#tab-form').addClass('active show');
-        tabs.showTab('tab-form');
-    } else {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
-        tabsContents.find('#tab-form').removeClass('active show');
-        tabs.showTab('tab-list');
-    }
 };
 /**
  * Операции со справочниками
@@ -743,6 +688,59 @@ guide.showInsertForm = function (callback) {
     tabs.tabInsertEdit('show');
 
     callback();
+};
+/**
+ * Операции с табами
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+var tabs = {};
+/**
+ * Покажем указанный таб
+ *
+ * @param {string} tabID Идентификатор нужного таба
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+tabs.showTab = function (tabID) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    tabsLinks.find('.nav-link').removeClass('active show');
+    tabsContents.find('.tab-pane').removeClass('active show');
+
+    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
+    tabsContents.find('#' + tabID).addClass('active show');
+};
+/**
+ * Скрыть\Показать вторую вкладку
+ *
+ * @param {string} action Действие (show|hide)
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+tabs.tabInsertEdit = function (action) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    if (action === 'show') {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
+        tabsContents.find('#tab-form').addClass('active show');
+        tabs.showTab('tab-form');
+    } else {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
+        tabsContents.find('#tab-form').removeClass('active show');
+        tabs.showTab('tab-list');
+    }
 };
 /**
  * Работа с пользователями

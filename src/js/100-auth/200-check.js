@@ -1,13 +1,11 @@
 /**
  * Проверка сессии
  *
- * @version 13.05.2018
+ * @version 17.08.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 auth.check = function () {
-    bootstrap.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
-        bootstrap.lightajax.preloader('hide');
-
+    bootstrap.lightajax.get(false, pathServerAPI + 'auth/check', {}, function (result) {
         if (result.hasOwnProperty('errors')) {
             bootstrap.showErrors(result.errors);
         } else {
