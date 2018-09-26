@@ -577,7 +577,7 @@ guide.init = function () {
 /**
  * Список элементов справочника
  *
- * @version 07.08.2018
+ * @version 26.09.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 guide._getData = function () {
@@ -602,8 +602,12 @@ guide._getData = function () {
                 $('#js-guide__list').show();
             }
 
-            if (guide.hasOwnProperty('initCallback')) {
-                guide.initCallback();
+            if (
+                result.data.js_class !== undefined
+                && window.hasOwnProperty(result.data.js_class)
+                && window[result.data.js_class].hasOwnProperty('init')
+            ) {
+                window[result.data.js_class].init();
             }
         }
     });
