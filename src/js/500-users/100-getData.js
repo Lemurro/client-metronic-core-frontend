@@ -1,7 +1,7 @@
 /**
  * Список пользователей
  *
- * @version 13.05.2018
+ * @version 10.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 usersCore.getData = function () {
@@ -18,6 +18,12 @@ usersCore.getData = function () {
             }
 
             $('#js-users__items').html(html);
+
+            localforage.getItem('lastSessionID', function (err, value) {
+                if (value !== null) {
+                    $('#js-users__items').find('.js-login-by-user').hide();
+                }
+            });
         }
     });
 };

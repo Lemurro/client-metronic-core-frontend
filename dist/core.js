@@ -1,8 +1,8 @@
 /**
  * Загрузочный скрипт приложения
  *
- * @version 03.07.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 10.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
 /**
@@ -38,7 +38,7 @@ bootstrap.lightajax = {};
  *
  * @param {object} options Параметры
  *
- * @version 03.07.2018
+ * @version 10.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 bootstrap.init = function (options) {
@@ -72,6 +72,13 @@ bootstrap.init = function (options) {
     localforage.getItem('sessionID', function (err, value) {
         bootstrap.sessionID = value;
         auth.check();
+    });
+
+    // Достанем из локального хранилища ИД прошлой сессии, если есть
+    localforage.getItem('lastSessionID', function (err, value) {
+        if (value !== null) {
+            $('#js-user-return').show();
+        }
     });
 };
 /**
@@ -505,6 +512,59 @@ helper.showConfirm = function (title, content, confirmButtonText, cancelButtonTe
     });
 };
 /**
+ * Операции с табами
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+var tabs = {};
+/**
+ * Покажем указанный таб
+ *
+ * @param {string} tabID Идентификатор нужного таба
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+tabs.showTab = function (tabID) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    tabsLinks.find('.nav-link').removeClass('active show');
+    tabsContents.find('.tab-pane').removeClass('active show');
+
+    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
+    tabsContents.find('#' + tabID).addClass('active show');
+};
+/**
+ * Скрыть\Показать вторую вкладку
+ *
+ * @param {string} action Действие (show|hide)
+ *
+ * @version 13.05.2018
+ * @author Дмитрий Щербаков <atomcms@ya.ru>
+ */
+tabs.tabInsertEdit = function (action) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    if (action === 'show') {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
+        tabsContents.find('#tab-form').addClass('active show');
+        tabs.showTab('tab-form');
+    } else {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
+        tabsContents.find('#tab-form').removeClass('active show');
+        tabs.showTab('tab-list');
+    }
+};
+/**
  * Операции со справочниками
  *
  * @version 07.08.2018
@@ -716,59 +776,6 @@ guide.showInsertForm = function (callback) {
     callback();
 };
 /**
- * Операции с табами
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-var tabs = {};
-/**
- * Покажем указанный таб
- *
- * @param {string} tabID Идентификатор нужного таба
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-tabs.showTab = function (tabID) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    tabsLinks.find('.nav-link').removeClass('active show');
-    tabsContents.find('.tab-pane').removeClass('active show');
-
-    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
-    tabsContents.find('#' + tabID).addClass('active show');
-};
-/**
- * Скрыть\Показать вторую вкладку
- *
- * @param {string} action Действие (show|hide)
- *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
- */
-tabs.tabInsertEdit = function (action) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    if (action === 'show') {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
-        tabsContents.find('#tab-form').addClass('active show');
-        tabs.showTab('tab-form');
-    } else {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
-        tabsContents.find('#tab-form').removeClass('active show');
-        tabs.showTab('tab-list');
-    }
-};
-/**
  * Работа с пользователями
  *
  * @version 13.05.2018
@@ -816,7 +823,7 @@ usersCore.edit = function (id, callback) {
 /**
  * Список пользователей
  *
- * @version 13.05.2018
+ * @version 10.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 usersCore.getData = function () {
@@ -833,6 +840,12 @@ usersCore.getData = function () {
             }
 
             $('#js-users__items').html(html);
+
+            localforage.getItem('lastSessionID', function (err, value) {
+                if (value !== null) {
+                    $('#js-users__items').find('.js-login-by-user').hide();
+                }
+            });
         }
     });
 };
@@ -855,6 +868,42 @@ usersCore.insert = function (data, callback) {
             bootstrap.showErrors(result.errors);
         } else {
             callback(result);
+        }
+    });
+};
+/**
+ * Вход под указанным пользователем
+ *
+ * @param {integer} id ИД пользователя
+ *
+ * @version 10.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+usersCore.loginByUser = function (id) {
+    swal({
+        title            : 'Войти под пользователем?',
+        html             : '',
+        type             : 'warning',
+        showCancelButton : true,
+        confirmButtonText: 'Да',
+        cancelButtonText : 'Нет'
+    }).then(function (result) {
+        if (result.value) {
+            bootstrap.lightajax.post(true, pathServerAPI + 'users/login_by_user', {
+                user_id: id
+            }, function (result) {
+                bootstrap.lightajax.preloader('hide');
+
+                if (result.hasOwnProperty('errors')) {
+                    bootstrap.showErrors(result.errors);
+                } else {
+                    localforage.setItem('lastSessionID', bootstrap.sessionID, function () {
+                        localforage.setItem('sessionID', result.data.session, function () {
+                            location.replace(location.origin);
+                        });
+                    });
+                }
+            });
         }
     });
 };
@@ -890,6 +939,40 @@ usersCore.remove = function (id, name, callback) {
         } else {
 
         }
+    });
+};
+/**
+ * Вернуться обратно
+ *
+ * @version 10.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+usersCore.return = function () {
+    localforage.getItem('lastSessionID', function (err, value) {
+        var lastSessionID = value;
+
+        if (lastSessionID === null) {
+            swal('Ошибка', 'Прошлая сессия отсутствует', 'error');
+
+            return;
+        }
+
+        swal({
+            title            : 'Вернуться обратно?',
+            html             : '',
+            type             : 'warning',
+            showCancelButton : true,
+            confirmButtonText: 'Да',
+            cancelButtonText : 'Нет'
+        }).then(function (result) {
+            if (result.value) {
+                localforage.removeItem('lastSessionID', function () {
+                    localforage.setItem('sessionID', lastSessionID, function () {
+                        location.replace(location.origin);
+                    });
+                });
+            }
+        });
     });
 };
 /**

@@ -1,8 +1,8 @@
 /**
  * Загрузочный скрипт приложения
  *
- * @version 03.07.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 10.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
 /**
@@ -38,7 +38,7 @@ bootstrap.lightajax = {};
  *
  * @param {object} options Параметры
  *
- * @version 03.07.2018
+ * @version 10.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 bootstrap.init = function (options) {
@@ -72,5 +72,12 @@ bootstrap.init = function (options) {
     localforage.getItem('sessionID', function (err, value) {
         bootstrap.sessionID = value;
         auth.check();
+    });
+
+    // Достанем из локального хранилища ИД прошлой сессии, если есть
+    localforage.getItem('lastSessionID', function (err, value) {
+        if (value !== null) {
+            $('#js-user-return').show();
+        }
     });
 };
