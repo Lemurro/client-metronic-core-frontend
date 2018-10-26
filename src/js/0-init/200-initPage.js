@@ -24,11 +24,19 @@ lemurro.initPage = function () {
             var page = $('#js-page');
 
             if (page.length > 0) {
-                var pageScript = window[page.attr('data-page')];
+                var pageName = page.attr('data-page');
 
-                if (pageScript !== undefined) {
-                    if (pageScript.hasOwnProperty('init')) {
-                        pageScript.init();
+                if (pageName === 'lemurro.guide') {
+                    if (window.hasOwnProperty('lemurro') && window.lemurro.hasOwnProperty('guide') && window.lemurro.guide.hasOwnProperty('init')) {
+                        lemurro.guide.init();
+                    }
+                } else {
+                    var pageScript = window[pageName];
+
+                    if (pageScript !== undefined) {
+                        if (pageScript.hasOwnProperty('init')) {
+                            pageScript.init();
+                        }
                     }
                 }
             }
