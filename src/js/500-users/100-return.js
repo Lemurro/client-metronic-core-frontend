@@ -1,10 +1,10 @@
 /**
  * Вернуться обратно
  *
- * @version 10.10.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-usersCore.return = function () {
+lemurro.users.return = function () {
     localforage.getItem('lastSessionID', function (err, value) {
         var lastSessionID = value;
 

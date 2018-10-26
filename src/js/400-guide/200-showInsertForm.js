@@ -3,22 +3,22 @@
  *
  * @param {function} callback Функция обратного вызова
  *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-guide.showInsertForm = function (callback) {
+lemurro.guide.showInsertForm = function (callback) {
     var container = $('#js-guide-form');
 
     container.attr('data-id', '0');
     container.find('.js-title').text('Добавление записи');
-    helper.clearFields(container);
+    lemurro.helper.clearFields(container);
 
     $('#js-guide__button-insert').show();
     $('#js-guide__button-save').hide();
 
     $('#js-tab-form-button').html('<i class="fas fa-plus"></i> Добавить');
 
-    tabs.tabInsertEdit('show');
+    lemurro.tabs.tabInsertEdit('show');
 
     callback();
 };

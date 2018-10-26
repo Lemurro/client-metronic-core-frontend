@@ -3,10 +3,10 @@
  *
  * @param {string} tabID Идентификатор нужного таба
  *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-tabs.showTab = function (tabID) {
+lemurro.tabs.showTab = function (tabID) {
     var tabsLinks    = $('#js-tabs__links');
     var tabsContents = $('#js-tabs__contents');
 

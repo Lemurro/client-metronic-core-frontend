@@ -1,10 +1,10 @@
 /**
  * Покажем форму входа
  *
- * @version 13.05.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-bootstrap.authScreen = function (action) {
+lemurro.authScreen = function (action) {
     var modal = $('#js-auth');
 
     if (action === 'show') {

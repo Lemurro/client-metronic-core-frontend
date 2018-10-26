@@ -1,15 +1,15 @@
 /**
  * Список пользователей
  *
- * @version 10.10.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-usersCore.getData = function () {
-    bootstrap.lightajax.get(true, pathServerAPI + 'users', {}, function (result) {
-        bootstrap.lightajax.preloader('hide');
+lemurro.users.getData = function () {
+    lemurro.lightajax.get(true, pathServerAPI + 'users', {}, function (result) {
+        lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
-            bootstrap.showErrors(result.errors);
+            lemurro.showErrors(result.errors);
         } else {
             var html = '';
 

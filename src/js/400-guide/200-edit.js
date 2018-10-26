@@ -4,15 +4,15 @@
  * @param {integer}  id       ИД записи
  * @param {function} callback Функция обратного вызова
  *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-guide.edit = function (id, callback) {
-    bootstrap.lightajax.get(true, pathServerAPI + 'guide/' + guide.type + '/' + id, {}, function (result) {
-        bootstrap.lightajax.preloader('hide');
+lemurro.guide.edit = function (id, callback) {
+    lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide.type + '/' + id, {}, function (result) {
+        lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
-            bootstrap.showErrors(result.errors);
+            lemurro.showErrors(result.errors);
         } else {
             var container = $('#js-guide-form');
 
@@ -24,7 +24,7 @@ guide.edit = function (id, callback) {
 
             $('#js-tab-form-button').html('<i class="fas fa-pencil-alt"></i> Редактировать');
 
-            tabs.tabInsertEdit('show');
+            lemurro.tabs.tabInsertEdit('show');
 
             callback(result);
         }

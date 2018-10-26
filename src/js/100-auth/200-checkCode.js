@@ -1,13 +1,13 @@
 /**
  * Проверка введенного кода
  *
- * @version 26.07.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-auth.checkCode = function () {
+lemurro.auth.checkCode = function () {
     var browser = bowser.getParser(window.navigator.userAgent);
 
-    bootstrap.lightajax.post(true, pathServerAPI + 'auth/code', {
+    lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
         'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
         'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
         'device_info': {
@@ -18,17 +18,17 @@ auth.checkCode = function () {
             model       : browser.parsedResult.browser.version
         }
     }, function (result) {
-        bootstrap.lightajax.preloader('hide');
+        lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
             $('#js-auth__check-form').find('input[name="auth_code"]').val('');
 
-            bootstrap.showErrors(result.errors);
+            lemurro.showErrors(result.errors);
         } else {
             localforage.setItem('sessionID', result.data.session, function () {
-                bootstrap.sessionID = result.data.session;
-                bootstrap.authScreen('hide');
-                auth.check();
+                lemurro.sessionID = result.data.session;
+                lemurro.authScreen('hide');
+                lemurro.auth.check();
             });
         }
     });

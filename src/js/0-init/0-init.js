@@ -1,7 +1,7 @@
 /**
  * Загрузочный скрипт приложения
  *
- * @version 10.10.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -10,68 +10,68 @@
  *
  * @type {object}
  */
-var bootstrap = {};
+var lemurro = {};
 
 /**
  * Настройки
  *
  * @type {object}
  */
-bootstrap.settings = {};
+lemurro.settings = {};
 
 /**
  * ИД сессии
  *
  * @type {string}
  */
-bootstrap.sessionID = '';
+lemurro.sessionID = '';
 
 /**
  * Объект для выполнения Ajax-запросов
  *
  * @type {object}
  */
-bootstrap.lightajax = {};
+lemurro.lightajax = {};
 
 /**
  * Инициализация
  *
  * @param {object} options Параметры
  *
- * @version 10.10.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-bootstrap.init = function (options) {
-    bootstrap.settings = Object.assign({
+lemurro.init = function (options) {
+    lemurro.settings = Object.assign({
         onLoad: function (data) {
             // Выполняет код после загрузки приложения, перед загрузкой страницы
         }
     }, options);
 
-    bootstrap._bindJSerrors();
+    lemurro._bindJSerrors();
 
     // Инициализируем плагин LightAjax
-    bootstrap.lightajax = new LightAjax({
+    lemurro.lightajax = new LightAjax({
         callbackAlert: function (title, message) {
             swal(title, message, 'error');
         },
         ajax         : {
             beforeSend: function (xhr, settings) {
                 if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
-                    xhr.setRequestHeader("X-SESSION-ID", bootstrap.sessionID);
+                    xhr.setRequestHeader("X-SESSION-ID", lemurro.sessionID);
                 }
             }
         }
     });
 
-    bootstrap._bindPhoneMask();
-    bootstrap._bindCodeMask();
-    bootstrap._bindSelect2();
+    lemurro._bindPhoneMask();
+    lemurro._bindCodeMask();
+    lemurro._bindSelect2();
 
     // Достанем из локального хранилища ИД сессии, если есть
     localforage.getItem('sessionID', function (err, value) {
-        bootstrap.sessionID = value;
-        auth.check();
+        lemurro.sessionID = value;
+        lemurro.auth.check();
     });
 
     // Достанем из локального хранилища ИД прошлой сессии, если есть

@@ -1,17 +1,17 @@
 /**
  * Получение кода
  *
- * @version 24.07.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-auth.getCode = function () {
-    bootstrap.lightajax.get(true, pathServerAPI + 'auth/code', {
+lemurro.auth.getCode = function () {
+    lemurro.lightajax.get(true, pathServerAPI + 'auth/code', {
         'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
     }, function (result) {
-        bootstrap.lightajax.preloader('hide');
+        lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
-            bootstrap.showErrors(result.errors);
+            lemurro.showErrors(result.errors);
         } else {
             if (result.data.hasOwnProperty('message')) {
                 console.log(result.data.message, 'AuthCode');
@@ -23,7 +23,7 @@ auth.getCode = function () {
             formCode.find('.js-timer__count').text('60');
             formCode.find('.js-resend').hide();
 
-            auth._runTimer();
+            lemurro.auth._runTimer();
 
             $('#js-auth__get-form').hide();
             formCode.show();

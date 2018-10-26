@@ -1,8 +1,8 @@
 /**
  * Работа с пользователями
  *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
 /**
@@ -10,4 +10,4 @@
  *
  * @type {object}
  */
-var usersCore = {};
+lemurro.users = {};

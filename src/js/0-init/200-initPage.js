@@ -1,13 +1,13 @@
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 07.08.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-bootstrap.initPage = function () {
-    bootstrap.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
+lemurro.initPage = function () {
+    lemurro.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
         if (result.hasOwnProperty('errors')) {
-            bootstrap.showErrors(result.errors);
+            lemurro.showErrors(result.errors);
         } else {
             if (result.data.admin) {
                 $('#m_header_menu').find('.js-role').show();
@@ -19,7 +19,7 @@ bootstrap.initPage = function () {
                 }
             }
 
-            bootstrap.settings.onLoad(result.data);
+            lemurro.settings.onLoad(result.data);
 
             var page = $('#js-page');
 

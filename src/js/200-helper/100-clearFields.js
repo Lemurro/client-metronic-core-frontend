@@ -3,10 +3,10 @@
  *
  * @param {object} container jQuery-объект контейнера
  *
- * @version 13.05.2018
- * @author Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-helper.clearFields = function (container) {
+lemurro.helper.clearFields = function (container) {
     container.find('input[type="text"],input[type="password"],input[type="email"],input[type="number"],input[type="tel"],input[type="url"],input[type="date"],input[type="time"]')
         .val('');
 

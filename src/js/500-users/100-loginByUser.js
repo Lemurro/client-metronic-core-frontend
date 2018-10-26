@@ -3,10 +3,10 @@
  *
  * @param {integer} id ИД пользователя
  *
- * @version 10.10.2018
+ * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-usersCore.loginByUser = function (id) {
+lemurro.users.loginByUser = function (id) {
     swal({
         title            : 'Войти под пользователем?',
         html             : '',
@@ -16,15 +16,15 @@ usersCore.loginByUser = function (id) {
         cancelButtonText : 'Нет'
     }).then(function (result) {
         if (result.value) {
-            bootstrap.lightajax.post(true, pathServerAPI + 'users/login_by_user', {
+            lemurro.lightajax.post(true, pathServerAPI + 'users/login_by_user', {
                 user_id: id
             }, function (result) {
-                bootstrap.lightajax.preloader('hide');
+                lemurro.lightajax.preloader('hide');
 
                 if (result.hasOwnProperty('errors')) {
-                    bootstrap.showErrors(result.errors);
+                    lemurro.showErrors(result.errors);
                 } else {
-                    localforage.setItem('lastSessionID', bootstrap.sessionID, function () {
+                    localforage.setItem('lastSessionID', lemurro.sessionID, function () {
                         localforage.setItem('sessionID', result.data.session, function () {
                             location.replace(location.origin);
                         });
