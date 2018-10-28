@@ -1,7 +1,7 @@
 /**
  * Загрузочный скрипт приложения
  *
- * @version 26.10.2018
+ * @version 28.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -38,12 +38,12 @@ lemurro.lightajax = {};
  *
  * @param {object} options Параметры
  *
- * @version 26.10.2018
+ * @version 28.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.init = function (options) {
     lemurro.settings = Object.assign({
-        onLoad: function (data) {
+        onLoad: function () {
             // Выполняет код после загрузки приложения, перед загрузкой страницы
         }
     }, options);
@@ -205,17 +205,19 @@ lemurro.initPage = function () {
         } else {
             lemurro.userinfo = result.data;
 
+            $('.js-user__auth-id').text(lemurro.userinfo.auth_id);
+
             if (lemurro.userinfo.admin) {
-                $('#m_header_menu').find('.js-role').show();
+                $('body').find('.js-role').show();
             } else {
                 for (var pageID in lemurro.userinfo.roles) {
                     if (lemurro.userinfo.roles[pageID].indexOf('read') !== -1) {
-                        $('#m_header_menu').find('.js-role__' + pageID).show();
+                        $('body').find('.js-role__' + pageID).show();
                     }
                 }
             }
 
-            lemurro.settings.onLoad(lemurro.userinfo);
+            lemurro.settings.onLoad();
 
             var page = $('#js-page');
 
@@ -351,7 +353,7 @@ lemurro.auth._runTimer = function () {
 /**
  * Проверка сессии
  *
- * @version 26.10.2018
+ * @version 28.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.check = function () {
@@ -359,8 +361,6 @@ lemurro.auth.check = function () {
         if (result.hasOwnProperty('errors')) {
             lemurro.showErrors(result.errors);
         } else {
-            $('.js-user__auth-id').text(result.data.user.auth_id);
-
             lemurro.initPage();
         }
     });
