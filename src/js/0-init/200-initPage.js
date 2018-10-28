@@ -1,7 +1,7 @@
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 26.10.2018
+ * @version 28.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.initPage = function () {
@@ -9,17 +9,19 @@ lemurro.initPage = function () {
         if (result.hasOwnProperty('errors')) {
             lemurro.showErrors(result.errors);
         } else {
-            if (result.data.admin) {
+            lemurro.userinfo = result.data;
+
+            if (lemurro.userinfo.admin) {
                 $('#m_header_menu').find('.js-role').show();
             } else {
-                for (var pageID in result.data.roles) {
-                    if (result.data.roles[pageID].indexOf('read') !== -1) {
+                for (var pageID in lemurro.userinfo.roles) {
+                    if (lemurro.userinfo.roles[pageID].indexOf('read') !== -1) {
                         $('#m_header_menu').find('.js-role__' + pageID).show();
                     }
                 }
             }
 
-            lemurro.settings.onLoad(result.data);
+            lemurro.settings.onLoad(lemurro.userinfo);
 
             var page = $('#js-page');
 
