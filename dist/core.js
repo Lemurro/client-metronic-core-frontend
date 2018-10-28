@@ -64,9 +64,10 @@ lemurro.init = function (options) {
         }
     });
 
-    lemurro._bindPhoneMask();
     lemurro._bindCodeMask();
+    lemurro._bindPhoneMask();
     lemurro._bindSelect2();
+    lemurro._bindTableFilter();
 
     // Достанем из локального хранилища ИД сессии, если есть
     localforage.getItem('sessionID', function (err, value) {
@@ -168,6 +169,15 @@ lemurro._bindSelect2 = function () {
             placeholder: 'Выберите из списка'
         });
     });
+};
+/**
+ * Подключим jQuery.TableFilter
+ *
+ * @version 28.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindTableFilter = function () {
+    $('.tablefilter').TableFilter();
 };
 /**
  * Покажем форму входа
