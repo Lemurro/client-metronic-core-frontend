@@ -11,17 +11,19 @@ lemurro.initPage = function () {
         } else {
             lemurro.userinfo = result.data;
 
+            $('.js-user__auth-id').text(lemurro.userinfo.auth_id);
+
             if (lemurro.userinfo.admin) {
-                $('#m_header_menu').find('.js-role').show();
+                $('body').find('.js-role').show();
             } else {
                 for (var pageID in lemurro.userinfo.roles) {
                     if (lemurro.userinfo.roles[pageID].indexOf('read') !== -1) {
-                        $('#m_header_menu').find('.js-role__' + pageID).show();
+                        $('body').find('.js-role__' + pageID).show();
                     }
                 }
             }
 
-            lemurro.settings.onLoad(lemurro.userinfo);
+            lemurro.settings.onLoad();
 
             var page = $('#js-page');
 

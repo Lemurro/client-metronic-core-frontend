@@ -1,7 +1,7 @@
 /**
  * Загрузочный скрипт приложения
  *
- * @version 26.10.2018
+ * @version 28.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -38,12 +38,12 @@ lemurro.lightajax = {};
  *
  * @param {object} options Параметры
  *
- * @version 26.10.2018
+ * @version 28.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.init = function (options) {
     lemurro.settings = Object.assign({
-        onLoad: function (data) {
+        onLoad: function () {
             // Выполняет код после загрузки приложения, перед загрузкой страницы
         }
     }, options);
