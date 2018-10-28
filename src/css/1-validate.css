@@ -1,0 +1,11 @@
+.has-danger input,
+.has-danger textarea,
+.has-danger select,
+.has-danger select ~ .select2-container--default .select2-selection {
+    border: 1px #dd0000 solid;
+    background-color: #ffb9b9;
+}
+
+.form-control-feedback {
+    display: none !important;
+}
