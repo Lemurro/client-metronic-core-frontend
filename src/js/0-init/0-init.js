@@ -64,9 +64,10 @@ lemurro.init = function (options) {
         }
     });
 
-    lemurro._bindPhoneMask();
     lemurro._bindCodeMask();
+    lemurro._bindPhoneMask();
     lemurro._bindSelect2();
+    lemurro._bindTableFilter();
 
     // Достанем из локального хранилища ИД сессии, если есть
     localforage.getItem('sessionID', function (err, value) {
