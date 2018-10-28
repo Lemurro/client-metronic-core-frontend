@@ -195,7 +195,7 @@ lemurro.authScreen = function (action) {
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 26.10.2018
+ * @version 28.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.initPage = function () {
@@ -203,17 +203,19 @@ lemurro.initPage = function () {
         if (result.hasOwnProperty('errors')) {
             lemurro.showErrors(result.errors);
         } else {
-            if (result.data.admin) {
+            lemurro.userinfo = result.data;
+
+            if (lemurro.userinfo.admin) {
                 $('#m_header_menu').find('.js-role').show();
             } else {
-                for (var pageID in result.data.roles) {
-                    if (result.data.roles[pageID].indexOf('read') !== -1) {
+                for (var pageID in lemurro.userinfo.roles) {
+                    if (lemurro.userinfo.roles[pageID].indexOf('read') !== -1) {
                         $('#m_header_menu').find('.js-role__' + pageID).show();
                     }
                 }
             }
 
-            lemurro.settings.onLoad(result.data);
+            lemurro.settings.onLoad(lemurro.userinfo);
 
             var page = $('#js-page');
 
@@ -482,6 +484,65 @@ lemurro.helper.clearFields = function (container) {
     container.find('input[type="radio"]').each(function () {
         $(this).prop('checked', false);
     });
+};
+/**
+ * Преобразование строки в дробное число
+ *
+ * @param {string} str Строка с дробным числом
+ *
+ * @return {string}
+ *
+ * @version 28.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.helper.decimal = function (str) {
+    return parseFloat(str.replace(/,/g, '.'));
+};
+/**
+ * Проверка пользователя на наличие прав
+ *
+ * @param {string}   page            Раздел
+ * @param {string}   access          Право доступа
+ * @param {function} callbackSuccess Функция вызова при успешном получении данных
+ * @param {function} callbackFail    Функция вызова при провале
+ *
+ * @return {boolean}
+ *
+ * @version 28.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
+    var _timer = setInterval(function () {
+        if (lemurro.hasOwnProperty('userinfo')) {
+            clearInterval(_timer);
+
+            if (lemurro.userinfo.admin) {
+                callbackSuccess();
+
+                return true;
+            } else {
+                if (lemurro.userinfo.roles.hasOwnProperty(page)) {
+                    var i;
+
+                    for (i in lemurro.userinfo.roles[page]) {
+                        if (lemurro.userinfo.roles[page][i] === access) {
+                            if (!isEmpty(callbackSuccess)) {
+                                callbackSuccess();
+
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                if (!isEmpty(callbackFail)) {
+                    callbackFail();
+
+                    return false;
+                }
+            }
+        }
+    }, 500);
 };
 /**
  * Покажем подтверждение
