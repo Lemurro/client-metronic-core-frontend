@@ -518,7 +518,7 @@ lemurro.helper.decimal = function (str) {
  *
  * @return {boolean}
  *
- * @version 28.10.2018
+ * @version 31.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
@@ -527,7 +527,9 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
             clearInterval(_timer);
 
             if (lemurro.userinfo.admin) {
-                callbackSuccess();
+                if (!isEmpty(callbackSuccess)) {
+                    callbackSuccess();
+                }
 
                 return true;
             } else {
@@ -538,18 +540,18 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
                         if (lemurro.userinfo.roles[page][i] === access) {
                             if (!isEmpty(callbackSuccess)) {
                                 callbackSuccess();
-
-                                return true;
                             }
+
+                            return true;
                         }
                     }
                 }
 
                 if (!isEmpty(callbackFail)) {
                     callbackFail();
-
-                    return false;
                 }
+
+                return false;
             }
         }
     }, 500);
