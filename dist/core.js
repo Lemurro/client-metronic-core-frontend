@@ -516,8 +516,6 @@ lemurro.helper.decimal = function (str) {
  * @param {function} callbackSuccess Функция вызова при успешном получении данных
  * @param {function} callbackFail    Функция вызова при провале
  *
- * @return {boolean}
- *
  * @version 31.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
@@ -530,8 +528,6 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
                 if (!isEmpty(callbackSuccess)) {
                     callbackSuccess();
                 }
-
-                return true;
             } else {
                 if (lemurro.userinfo.roles.hasOwnProperty(page)) {
                     var i;
@@ -541,8 +537,6 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
                             if (!isEmpty(callbackSuccess)) {
                                 callbackSuccess();
                             }
-
-                            return true;
                         }
                     }
                 }
@@ -550,8 +544,6 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
                 if (!isEmpty(callbackFail)) {
                     callbackFail();
                 }
-
-                return false;
             }
         }
     }, 500);
