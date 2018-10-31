@@ -529,11 +529,15 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
                     callbackSuccess();
                 }
             } else {
+                var fail = true;
+
                 if (lemurro.userinfo.roles.hasOwnProperty(page)) {
                     var i;
 
                     for (i in lemurro.userinfo.roles[page]) {
                         if (lemurro.userinfo.roles[page][i] === access) {
+                            fail = false;
+
                             if (!isEmpty(callbackSuccess)) {
                                 callbackSuccess();
                             }
@@ -541,7 +545,7 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
                     }
                 }
 
-                if (!isEmpty(callbackFail)) {
+                if (fail && !isEmpty(callbackFail)) {
                     callbackFail();
                 }
             }
