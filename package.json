@@ -6,6 +6,7 @@
   "author": "DimNS <dimns@dimns.ru>",
   "license": "MIT",
   "devDependencies": {
+    "del": "^3.0.0",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^3.10.0",
     "gulp-concat": "^2.6.0",
