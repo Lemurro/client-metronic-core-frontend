@@ -3707,321 +3707,6 @@ return Template7;
 //# sourceMappingURL=template7.js.map
 
 /**
- * Загрузочный скрипт приложения
- *
- * @version 28.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект главного скрипта
- *
- * @type {object}
- */
-var lemurro = {};
-
-/**
- * Настройки
- *
- * @type {object}
- */
-lemurro.settings = {};
-
-/**
- * ИД сессии
- *
- * @type {string}
- */
-lemurro.sessionID = '';
-
-/**
- * Объект для выполнения Ajax-запросов
- *
- * @type {object}
- */
-lemurro.lightajax = {};
-
-/**
- * Инициализация
- *
- * @param {object} options Параметры
- *
- * @version 28.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.init = function (options) {
-    lemurro.settings = Object.assign({
-        onLoad: function () {
-            // Выполняет код после загрузки приложения, перед загрузкой страницы
-        }
-    }, options);
-
-    lemurro._bindJSerrors();
-
-    // Инициализируем плагин LightAjax
-    lemurro.lightajax = new LightAjax({
-        callbackAlert: function (title, message) {
-            swal(title, message, 'error');
-        },
-        ajax         : {
-            beforeSend: function (xhr, settings) {
-                if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
-                    xhr.setRequestHeader("X-SESSION-ID", lemurro.sessionID);
-                }
-            }
-        }
-    });
-
-    lemurro._bindCodeMask();
-    lemurro._bindPhoneMask();
-    lemurro._bindSelect2();
-    lemurro._bindTableFilter();
-
-    // Достанем из локального хранилища ИД сессии, если есть
-    localforage.getItem('sessionID', function (err, value) {
-        lemurro.sessionID = value;
-        lemurro.auth.check();
-    });
-
-    // Достанем из локального хранилища ИД прошлой сессии, если есть
-    localforage.getItem('lastSessionID', function (err, value) {
-        if (value !== null) {
-            $('#js-user-return').show();
-        }
-    });
-};
-/**
- * Создадим маску для кода авторизации
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindCodeMask = function () {
-    $('.js-code-mask').each(function () {
-        var element = $(this);
-
-        Inputmask({
-            'mask': '9999'
-        }).mask(element);
-    });
-};
-/**
- * Событие отправки javascript-ошибки при возникновении
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindJSerrors = function () {
-    /**
-     * Отправка javascript-ошибки
-     *
-     * @param {string} msg
-     * @param {string} file
-     * @param {string} line
-     * @param {string} col
-     * @param {string} err
-     *
-     * @version 17.04.2018
-     * @author  Дмитрий Щербаков <atomcms@ya.ru>
-     */
-    function sendError(msg, file, line, col, err) {
-        var errString = 'JSON not found';
-        if (window.JSON) {
-            errString = JSON.stringify(err);
-        }
-
-        if (typeof(msg) === 'object') {
-            file      = msg.filename;
-            line      = msg.lineno;
-            col       = msg.colno;
-            errString = msg.error.stack;
-            msg       = msg.message;
-        }
-
-        new Image().src = pathServerAPI + 'jserrors?msg=' + encodeURIComponent(msg) + '&file=' + encodeURIComponent(file) + '&line=' + encodeURIComponent(line) + '&col=' + encodeURIComponent(col) + '&err=' + encodeURIComponent(errString);
-    }
-
-    if (window.addEventListener) {
-        window.addEventListener('error', sendError, false);
-    } else if (window.attachEvent) {
-        window.attachEvent('onerror', sendError);
-    } else {
-        window.onerror = sendError;
-    }
-};
-/**
- * Создадим маску для телефона
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindPhoneMask = function () {
-    $('.js-phone-mask').each(function () {
-        var element = $(this);
-
-        Inputmask({
-            'mask': '+7 (999) 999-99-99'
-        }).mask(element);
-    });
-};
-/**
- * Подключим Select2
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindSelect2 = function () {
-    $('.js-select2').each(function () {
-        $(this).select2({
-            language   : 'ru',
-            placeholder: 'Выберите из списка'
-        });
-    });
-};
-/**
- * Подключим jQuery.TableFilter
- *
- * @version 28.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindTableFilter = function () {
-    $('.tablefilter').TableFilter();
-};
-/**
- * Покажем форму входа
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.authScreen = function (action) {
-    var modal = $('#js-auth');
-
-    if (action === 'show') {
-        $('#js-auth__get-form').show();
-        $('#js-auth__check-form').hide();
-
-        modal.find('input[type="text"]').val('');
-
-        modal.modal({
-            backdrop: 'static',
-            keyboard: false
-        });
-    } else {
-        modal.modal('hide');
-    }
-};
-/**
- * Определим загруженную страницу и запустим ее init() если он есть
- *
- * @version 28.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.initPage = function () {
-    lemurro.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            lemurro.userinfo = result.data;
-
-            $('.js-user__auth-id').text(lemurro.userinfo.auth_id);
-
-            if (lemurro.userinfo.admin) {
-                $('body').find('.js-role').show();
-            } else {
-                for (var pageID in lemurro.userinfo.roles) {
-                    if (lemurro.userinfo.roles[pageID].indexOf('read') !== -1) {
-                        $('body').find('.js-role__' + pageID).show();
-                    }
-                }
-            }
-
-            lemurro.settings.onLoad();
-
-            var page = $('#js-page');
-
-            if (page.length > 0) {
-                var pageName = page.attr('data-page');
-
-                if (pageName === 'lemurro.guide') {
-                    if (window.hasOwnProperty('lemurro') && window.lemurro.hasOwnProperty('guide') && window.lemurro.guide.hasOwnProperty('init')) {
-                        lemurro.guide.init();
-                    }
-                } else {
-                    var pageScript = window[pageName];
-
-                    if (pageScript !== undefined) {
-                        if (pageScript.hasOwnProperty('init')) {
-                            pageScript.init();
-                        }
-                    }
-                }
-            }
-        }
-    });
-};
-/**
- * Отображение ошибок
- *
- * @param {array} errors Массив ошибок
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.showErrors = function (errors) {
-    if (errors.length === 1 && errors[0].status === '401 Unauthorized') {
-        lemurro.authScreen('show');
-    } else if (errors.length === 1 && errors[0].status === '403 Forbidden') {
-        var redirect = true;
-
-        if (errors[0].hasOwnProperty('meta') && errors[0].meta.hasOwnProperty('redirect')) {
-            redirect = errors[0].meta.redirect;
-        }
-
-        if (redirect) {
-            location.assign(location.origin + '/403');
-        } else {
-            lemurro._showError(errors[0].code, errors[0].title);
-        }
-    } else {
-        for (var i in errors) {
-            lemurro._showError(errors[i].code, errors[i].title);
-        }
-    }
-};
-
-/**
- * Покажем ошибку
- *
- * @param {string} errCode  Код ошибки
- * @param {string} errTitle Текст ошибки
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._showError = function (errCode, errTitle) {
-    var title = 'Неизвестная ошибка';
-    var code  = 'error';
-
-    switch (errCode) {
-        case 'danger':
-            code  = 'error';
-            title = 'Критическая ошибка';
-            break;
-
-        case 'warning':
-            code  = 'warning';
-            title = 'Внимание!';
-            break;
-
-        case 'info':
-            code  = 'info';
-            title = 'Информация';
-            break;
-    }
-
-    swal(title, errTitle, code);
-};
-/**
  * Проверка сессии при запуске приложения
  *
  * @version 26.10.2018
@@ -4805,4 +4490,319 @@ lemurro.users.showInsertForm = function (callback) {
     lemurro.tabs.tabInsertEdit('show');
 
     callback();
+};
+/**
+ * Загрузочный скрипт приложения
+ *
+ * @version 28.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект главного скрипта
+ *
+ * @type {object}
+ */
+var lemurro = {};
+
+/**
+ * Настройки
+ *
+ * @type {object}
+ */
+lemurro.settings = {};
+
+/**
+ * ИД сессии
+ *
+ * @type {string}
+ */
+lemurro.sessionID = '';
+
+/**
+ * Объект для выполнения Ajax-запросов
+ *
+ * @type {object}
+ */
+lemurro.lightajax = {};
+
+/**
+ * Инициализация
+ *
+ * @param {object} options Параметры
+ *
+ * @version 28.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.init = function (options) {
+    lemurro.settings = Object.assign({
+        onLoad: function () {
+            // Выполняет код после загрузки приложения, перед загрузкой страницы
+        }
+    }, options);
+
+    lemurro._bindJSerrors();
+
+    // Инициализируем плагин LightAjax
+    lemurro.lightajax = new LightAjax({
+        callbackAlert: function (title, message) {
+            swal(title, message, 'error');
+        },
+        ajax         : {
+            beforeSend: function (xhr, settings) {
+                if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    xhr.setRequestHeader("X-SESSION-ID", lemurro.sessionID);
+                }
+            }
+        }
+    });
+
+    lemurro._bindCodeMask();
+    lemurro._bindPhoneMask();
+    lemurro._bindSelect2();
+    lemurro._bindTableFilter();
+
+    // Достанем из локального хранилища ИД сессии, если есть
+    localforage.getItem('sessionID', function (err, value) {
+        lemurro.sessionID = value;
+        lemurro.auth.check();
+    });
+
+    // Достанем из локального хранилища ИД прошлой сессии, если есть
+    localforage.getItem('lastSessionID', function (err, value) {
+        if (value !== null) {
+            $('#js-user-return').show();
+        }
+    });
+};
+/**
+ * Создадим маску для кода авторизации
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindCodeMask = function () {
+    $('.js-code-mask').each(function () {
+        var element = $(this);
+
+        Inputmask({
+            'mask': '9999'
+        }).mask(element);
+    });
+};
+/**
+ * Событие отправки javascript-ошибки при возникновении
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindJSerrors = function () {
+    /**
+     * Отправка javascript-ошибки
+     *
+     * @param {string} msg
+     * @param {string} file
+     * @param {string} line
+     * @param {string} col
+     * @param {string} err
+     *
+     * @version 17.04.2018
+     * @author  Дмитрий Щербаков <atomcms@ya.ru>
+     */
+    function sendError(msg, file, line, col, err) {
+        var errString = 'JSON not found';
+        if (window.JSON) {
+            errString = JSON.stringify(err);
+        }
+
+        if (typeof(msg) === 'object') {
+            file      = msg.filename;
+            line      = msg.lineno;
+            col       = msg.colno;
+            errString = msg.error.stack;
+            msg       = msg.message;
+        }
+
+        new Image().src = pathServerAPI + 'jserrors?msg=' + encodeURIComponent(msg) + '&file=' + encodeURIComponent(file) + '&line=' + encodeURIComponent(line) + '&col=' + encodeURIComponent(col) + '&err=' + encodeURIComponent(errString);
+    }
+
+    if (window.addEventListener) {
+        window.addEventListener('error', sendError, false);
+    } else if (window.attachEvent) {
+        window.attachEvent('onerror', sendError);
+    } else {
+        window.onerror = sendError;
+    }
+};
+/**
+ * Создадим маску для телефона
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindPhoneMask = function () {
+    $('.js-phone-mask').each(function () {
+        var element = $(this);
+
+        Inputmask({
+            'mask': '+7 (999) 999-99-99'
+        }).mask(element);
+    });
+};
+/**
+ * Подключим Select2
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindSelect2 = function () {
+    $('.js-select2').each(function () {
+        $(this).select2({
+            language   : 'ru',
+            placeholder: 'Выберите из списка'
+        });
+    });
+};
+/**
+ * Подключим jQuery.TableFilter
+ *
+ * @version 28.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindTableFilter = function () {
+    $('.tablefilter').TableFilter();
+};
+/**
+ * Покажем форму входа
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.authScreen = function (action) {
+    var modal = $('#js-auth');
+
+    if (action === 'show') {
+        $('#js-auth__get-form').show();
+        $('#js-auth__check-form').hide();
+
+        modal.find('input[type="text"]').val('');
+
+        modal.modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+    } else {
+        modal.modal('hide');
+    }
+};
+/**
+ * Определим загруженную страницу и запустим ее init() если он есть
+ *
+ * @version 28.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.initPage = function () {
+    lemurro.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
+        if (result.hasOwnProperty('errors')) {
+            lemurro.showErrors(result.errors);
+        } else {
+            lemurro.userinfo = result.data;
+
+            $('.js-user__auth-id').text(lemurro.userinfo.auth_id);
+
+            if (lemurro.userinfo.admin) {
+                $('body').find('.js-role').show();
+            } else {
+                for (var pageID in lemurro.userinfo.roles) {
+                    if (lemurro.userinfo.roles[pageID].indexOf('read') !== -1) {
+                        $('body').find('.js-role__' + pageID).show();
+                    }
+                }
+            }
+
+            lemurro.settings.onLoad();
+
+            var page = $('#js-page');
+
+            if (page.length > 0) {
+                var pageName = page.attr('data-page');
+
+                if (pageName === 'lemurro.guide') {
+                    if (window.hasOwnProperty('lemurro') && window.lemurro.hasOwnProperty('guide') && window.lemurro.guide.hasOwnProperty('init')) {
+                        lemurro.guide.init();
+                    }
+                } else {
+                    var pageScript = window[pageName];
+
+                    if (pageScript !== undefined) {
+                        if (pageScript.hasOwnProperty('init')) {
+                            pageScript.init();
+                        }
+                    }
+                }
+            }
+        }
+    });
+};
+/**
+ * Отображение ошибок
+ *
+ * @param {array} errors Массив ошибок
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.showErrors = function (errors) {
+    if (errors.length === 1 && errors[0].status === '401 Unauthorized') {
+        lemurro.authScreen('show');
+    } else if (errors.length === 1 && errors[0].status === '403 Forbidden') {
+        var redirect = true;
+
+        if (errors[0].hasOwnProperty('meta') && errors[0].meta.hasOwnProperty('redirect')) {
+            redirect = errors[0].meta.redirect;
+        }
+
+        if (redirect) {
+            location.assign(location.origin + '/403');
+        } else {
+            lemurro._showError(errors[0].code, errors[0].title);
+        }
+    } else {
+        for (var i in errors) {
+            lemurro._showError(errors[i].code, errors[i].title);
+        }
+    }
+};
+
+/**
+ * Покажем ошибку
+ *
+ * @param {string} errCode  Код ошибки
+ * @param {string} errTitle Текст ошибки
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._showError = function (errCode, errTitle) {
+    var title = 'Неизвестная ошибка';
+    var code  = 'error';
+
+    switch (errCode) {
+        case 'danger':
+            code  = 'error';
+            title = 'Критическая ошибка';
+            break;
+
+        case 'warning':
+            code  = 'warning';
+            title = 'Внимание!';
+            break;
+
+        case 'info':
+            code  = 'info';
+            title = 'Информация';
+            break;
+    }
+
+    swal(title, errTitle, code);
 };
