@@ -1,15 +1,17 @@
 /**
  * Проверка сессии
  *
- * @version 28.10.2018
+ * @version 29.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.check = function () {
-    lemurro.lightajax.get(false, pathServerAPI + 'auth/check', {}, function (result) {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'auth/check', {}, function (result) {
         if (result.hasOwnProperty('errors')) {
+            lemurro.lightajax.preloader('hide');
+
             lemurro.showErrors(result.errors);
         } else {
-            lemurro.initPage();
+            lemurro.auth._getUser();
         }
     });
 };

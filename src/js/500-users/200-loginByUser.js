@@ -3,7 +3,7 @@
  *
  * @param {integer} id ИД пользователя
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.loginByUser = function (id) {
@@ -16,7 +16,7 @@ lemurro.users.loginByUser = function (id) {
         cancelButtonText : 'Нет'
     }).then(function (result) {
         if (result.value) {
-            lemurro.lightajax.post(true, pathServerAPI + 'users/login_by_user', {
+            lemurro.lightajax.post(true, app.config.apiUrl + 'users/login_by_user', {
                 user_id: id
             }, function (result) {
                 lemurro.lightajax.preloader('hide');

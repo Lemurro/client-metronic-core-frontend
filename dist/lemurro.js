@@ -3078,6 +3078,476 @@ module.exports = localforage_js;
 },{"3":3}]},{},[4])(4)
 });
 
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.Navigo = factory());
+}(this, (function () { 'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+function isPushStateAvailable() {
+  return !!(typeof window !== 'undefined' && window.history && window.history.pushState);
+}
+
+function Navigo(r, useHash, hash) {
+  this.root = null;
+  this._routes = [];
+  this._useHash = useHash;
+  this._hash = typeof hash === 'undefined' ? '#' : hash;
+  this._paused = false;
+  this._destroyed = false;
+  this._lastRouteResolved = null;
+  this._notFoundHandler = null;
+  this._defaultHandler = null;
+  this._usePushState = !useHash && isPushStateAvailable();
+  this._onLocationChange = this._onLocationChange.bind(this);
+  this._genericHooks = null;
+  this._historyAPIUpdateMethod = 'pushState';
+
+  if (r) {
+    this.root = useHash ? r.replace(/\/$/, '/' + this._hash) : r.replace(/\/$/, '');
+  } else if (useHash) {
+    this.root = this._cLoc().split(this._hash)[0].replace(/\/$/, '/' + this._hash);
+  }
+
+  this._listen();
+  this.updatePageLinks();
+}
+
+function clean(s) {
+  if (s instanceof RegExp) return s;
+  return s.replace(/\/+$/, '').replace(/^\/+/, '^/');
+}
+
+function regExpResultToParams(match, names) {
+  if (names.length === 0) return null;
+  if (!match) return null;
+  return match.slice(1, match.length).reduce(function (params, value, index) {
+    if (params === null) params = {};
+    params[names[index]] = decodeURIComponent(value);
+    return params;
+  }, null);
+}
+
+function replaceDynamicURLParts(route) {
+  var paramNames = [],
+      regexp;
+
+  if (route instanceof RegExp) {
+    regexp = route;
+  } else {
+    regexp = new RegExp(route.replace(Navigo.PARAMETER_REGEXP, function (full, dots, name) {
+      paramNames.push(name);
+      return Navigo.REPLACE_VARIABLE_REGEXP;
+    }).replace(Navigo.WILDCARD_REGEXP, Navigo.REPLACE_WILDCARD) + Navigo.FOLLOWED_BY_SLASH_REGEXP, Navigo.MATCH_REGEXP_FLAGS);
+  }
+  return { regexp: regexp, paramNames: paramNames };
+}
+
+function getUrlDepth(url) {
+  return url.replace(/\/$/, '').split('/').length;
+}
+
+function compareUrlDepth(urlA, urlB) {
+  return getUrlDepth(urlB) - getUrlDepth(urlA);
+}
+
+function findMatchedRoutes(url) {
+  var routes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+  return routes.map(function (route) {
+    var _replaceDynamicURLPar = replaceDynamicURLParts(clean(route.route)),
+        regexp = _replaceDynamicURLPar.regexp,
+        paramNames = _replaceDynamicURLPar.paramNames;
+
+    var match = url.replace(/^\/+/, '/').match(regexp);
+    var params = regExpResultToParams(match, paramNames);
+
+    return match ? { match: match, route: route, params: params } : false;
+  }).filter(function (m) {
+    return m;
+  });
+}
+
+function match(url, routes) {
+  return findMatchedRoutes(url, routes)[0] || false;
+}
+
+function root(url, routes) {
+  var matched = routes.map(function (route) {
+    return route.route === '' || route.route === '*' ? url : url.split(new RegExp(route.route + '($|\/)'))[0];
+  });
+  var fallbackURL = clean(url);
+
+  if (matched.length > 1) {
+    return matched.reduce(function (result, url) {
+      if (result.length > url.length) result = url;
+      return result;
+    }, matched[0]);
+  } else if (matched.length === 1) {
+    return matched[0];
+  }
+  return fallbackURL;
+}
+
+function isHashChangeAPIAvailable() {
+  return typeof window !== 'undefined' && 'onhashchange' in window;
+}
+
+function extractGETParameters(url) {
+  return url.split(/\?(.*)?$/).slice(1).join('');
+}
+
+function getOnlyURL(url, useHash, hash) {
+  var onlyURL = url,
+      split;
+  var cleanGETParam = function cleanGETParam(str) {
+    return str.split(/\?(.*)?$/)[0];
+  };
+
+  if (typeof hash === 'undefined') {
+    // To preserve BC
+    hash = '#';
+  }
+
+  if (isPushStateAvailable() && !useHash) {
+    onlyURL = cleanGETParam(url).split(hash)[0];
+  } else {
+    split = url.split(hash);
+    onlyURL = split.length > 1 ? cleanGETParam(split[1]) : cleanGETParam(split[0]);
+  }
+
+  return onlyURL;
+}
+
+function manageHooks(handler, hooks, params) {
+  if (hooks && (typeof hooks === 'undefined' ? 'undefined' : _typeof(hooks)) === 'object') {
+    if (hooks.before) {
+      hooks.before(function () {
+        var shouldRoute = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+        if (!shouldRoute) return;
+        handler();
+        hooks.after && hooks.after(params);
+      }, params);
+      return;
+    } else if (hooks.after) {
+      handler();
+      hooks.after && hooks.after(params);
+      return;
+    }
+  }
+  handler();
+}
+
+function isHashedRoot(url, useHash, hash) {
+  if (isPushStateAvailable() && !useHash) {
+    return false;
+  }
+
+  if (!url.match(hash)) {
+    return false;
+  }
+
+  var split = url.split(hash);
+
+  return split.length < 2 || split[1] === '';
+}
+
+Navigo.prototype = {
+  helpers: {
+    match: match,
+    root: root,
+    clean: clean,
+    getOnlyURL: getOnlyURL
+  },
+  navigate: function navigate(path, absolute) {
+    var to;
+
+    path = path || '';
+    if (this._usePushState) {
+      to = (!absolute ? this._getRoot() + '/' : '') + path.replace(/^\/+/, '/');
+      to = to.replace(/([^:])(\/{2,})/g, '$1/');
+      history[this._historyAPIUpdateMethod]({}, '', to);
+      this.resolve();
+    } else if (typeof window !== 'undefined') {
+      path = path.replace(new RegExp('^' + this._hash), '');
+      window.location.href = window.location.href.replace(/#$/, '').replace(new RegExp(this._hash + '.*$'), '') + this._hash + path;
+    }
+    return this;
+  },
+  on: function on() {
+    var _this = this;
+
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    if (typeof args[0] === 'function') {
+      this._defaultHandler = { handler: args[0], hooks: args[1] };
+    } else if (args.length >= 2) {
+      if (args[0] === '/') {
+        var func = args[1];
+
+        if (_typeof(args[1]) === 'object') {
+          func = args[1].uses;
+        }
+
+        this._defaultHandler = { handler: func, hooks: args[2] };
+      } else {
+        this._add(args[0], args[1], args[2]);
+      }
+    } else if (_typeof(args[0]) === 'object') {
+      var orderedRoutes = Object.keys(args[0]).sort(compareUrlDepth);
+
+      orderedRoutes.forEach(function (route) {
+        _this.on(route, args[0][route]);
+      });
+    }
+    return this;
+  },
+  off: function off(handler) {
+    if (this._defaultHandler !== null && handler === this._defaultHandler.handler) {
+      this._defaultHandler = null;
+    } else if (this._notFoundHandler !== null && handler === this._notFoundHandler.handler) {
+      this._notFoundHandler = null;
+    }
+    this._routes = this._routes.reduce(function (result, r) {
+      if (r.handler !== handler) result.push(r);
+      return result;
+    }, []);
+    return this;
+  },
+  notFound: function notFound(handler, hooks) {
+    this._notFoundHandler = { handler: handler, hooks: hooks };
+    return this;
+  },
+  resolve: function resolve(current) {
+    var _this2 = this;
+
+    var handler, m;
+    var url = (current || this._cLoc()).replace(this._getRoot(), '');
+
+    if (this._useHash) {
+      url = url.replace(new RegExp('^\/' + this._hash), '/');
+    }
+
+    var GETParameters = extractGETParameters(current || this._cLoc());
+    var onlyURL = getOnlyURL(url, this._useHash, this._hash);
+
+    if (this._paused) return false;
+
+    if (this._lastRouteResolved && onlyURL === this._lastRouteResolved.url && GETParameters === this._lastRouteResolved.query) {
+      if (this._lastRouteResolved.hooks && this._lastRouteResolved.hooks.already) {
+        this._lastRouteResolved.hooks.already(this._lastRouteResolved.params);
+      }
+      return false;
+    }
+
+    m = match(onlyURL, this._routes);
+
+    if (m) {
+      this._callLeave();
+      this._lastRouteResolved = {
+        url: onlyURL,
+        query: GETParameters,
+        hooks: m.route.hooks,
+        params: m.params,
+        name: m.route.name
+      };
+      handler = m.route.handler;
+      manageHooks(function () {
+        manageHooks(function () {
+          m.route.route instanceof RegExp ? handler.apply(undefined, m.match.slice(1, m.match.length)) : handler(m.params, GETParameters);
+        }, m.route.hooks, m.params, _this2._genericHooks);
+      }, this._genericHooks, m.params);
+      return m;
+    } else if (this._defaultHandler && (onlyURL === '' || onlyURL === '/' || onlyURL === this._hash || isHashedRoot(onlyURL, this._useHash, this._hash))) {
+      manageHooks(function () {
+        manageHooks(function () {
+          _this2._callLeave();
+          _this2._lastRouteResolved = { url: onlyURL, query: GETParameters, hooks: _this2._defaultHandler.hooks };
+          _this2._defaultHandler.handler(GETParameters);
+        }, _this2._defaultHandler.hooks);
+      }, this._genericHooks);
+      return true;
+    } else if (this._notFoundHandler) {
+      manageHooks(function () {
+        manageHooks(function () {
+          _this2._callLeave();
+          _this2._lastRouteResolved = { url: onlyURL, query: GETParameters, hooks: _this2._notFoundHandler.hooks };
+          _this2._notFoundHandler.handler(GETParameters);
+        }, _this2._notFoundHandler.hooks);
+      }, this._genericHooks);
+    }
+    return false;
+  },
+  destroy: function destroy() {
+    this._routes = [];
+    this._destroyed = true;
+    this._lastRouteResolved = null;
+    this._genericHooks = null;
+    clearTimeout(this._listeningInterval);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('popstate', this._onLocationChange);
+      window.removeEventListener('hashchange', this._onLocationChange);
+    }
+  },
+  updatePageLinks: function updatePageLinks() {
+    var self = this;
+
+    if (typeof document === 'undefined') return;
+
+    this._findLinks().forEach(function (link) {
+      if (!link.hasListenerAttached) {
+        link.addEventListener('click', function (e) {
+          if ((e.ctrlKey || e.metaKey) && e.target.tagName.toLowerCase() == 'a') {
+            return false;
+          }
+          var location = self.getLinkPath(link);
+
+          if (!self._destroyed) {
+            e.preventDefault();
+            self.navigate(location.replace(/\/+$/, '').replace(/^\/+/, '/'));
+          }
+        });
+        link.hasListenerAttached = true;
+      }
+    });
+  },
+  generate: function generate(name) {
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    var result = this._routes.reduce(function (result, route) {
+      var key;
+
+      if (route.name === name) {
+        result = route.route;
+        for (key in data) {
+          result = result.toString().replace(':' + key, data[key]);
+        }
+      }
+      return result;
+    }, '');
+
+    return this._useHash ? this._hash + result : result;
+  },
+  link: function link(path) {
+    return this._getRoot() + path;
+  },
+  pause: function pause() {
+    var status = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+    this._paused = status;
+    if (status) {
+      this._historyAPIUpdateMethod = 'replaceState';
+    } else {
+      this._historyAPIUpdateMethod = 'pushState';
+    }
+  },
+  resume: function resume() {
+    this.pause(false);
+  },
+  historyAPIUpdateMethod: function historyAPIUpdateMethod(value) {
+    if (typeof value === 'undefined') return this._historyAPIUpdateMethod;
+    this._historyAPIUpdateMethod = value;
+    return value;
+  },
+  disableIfAPINotAvailable: function disableIfAPINotAvailable() {
+    if (!isPushStateAvailable()) {
+      this.destroy();
+    }
+  },
+  lastRouteResolved: function lastRouteResolved() {
+    return this._lastRouteResolved;
+  },
+  getLinkPath: function getLinkPath(link) {
+    return link.getAttribute('href');
+  },
+  hooks: function hooks(_hooks) {
+    this._genericHooks = _hooks;
+  },
+
+  _add: function _add(route) {
+    var handler = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    var hooks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
+    if (typeof route === 'string') {
+      route = encodeURI(route);
+    }
+    this._routes.push((typeof handler === 'undefined' ? 'undefined' : _typeof(handler)) === 'object' ? {
+      route: route,
+      handler: handler.uses,
+      name: handler.as,
+      hooks: hooks || handler.hooks
+    } : { route: route, handler: handler, hooks: hooks });
+
+    return this._add;
+  },
+  _getRoot: function _getRoot() {
+    if (this.root !== null) return this.root;
+    this.root = root(this._cLoc().split('?')[0], this._routes);
+    return this.root;
+  },
+  _listen: function _listen() {
+    var _this3 = this;
+
+    if (this._usePushState) {
+      window.addEventListener('popstate', this._onLocationChange);
+    } else if (isHashChangeAPIAvailable()) {
+      window.addEventListener('hashchange', this._onLocationChange);
+    } else {
+      var cached = this._cLoc(),
+          current = void 0,
+          _check = void 0;
+
+      _check = function check() {
+        current = _this3._cLoc();
+        if (cached !== current) {
+          cached = current;
+          _this3.resolve();
+        }
+        _this3._listeningInterval = setTimeout(_check, 200);
+      };
+      _check();
+    }
+  },
+  _cLoc: function _cLoc() {
+    if (typeof window !== 'undefined') {
+      if (typeof window.__NAVIGO_WINDOW_LOCATION_MOCK__ !== 'undefined') {
+        return window.__NAVIGO_WINDOW_LOCATION_MOCK__;
+      }
+      return clean(window.location.href);
+    }
+    return '';
+  },
+  _findLinks: function _findLinks() {
+    return [].slice.call(document.querySelectorAll('[data-navigo]'));
+  },
+  _onLocationChange: function _onLocationChange() {
+    this.resolve();
+  },
+  _callLeave: function _callLeave() {
+    var lastRouteResolved = this._lastRouteResolved;
+
+    if (lastRouteResolved && lastRouteResolved.hooks && lastRouteResolved.hooks.leave) {
+      lastRouteResolved.hooks.leave(lastRouteResolved.params);
+    }
+  }
+};
+
+Navigo.PARAMETER_REGEXP = /([:*])(\w+)/g;
+Navigo.WILDCARD_REGEXP = /\*/g;
+Navigo.REPLACE_VARIABLE_REGEXP = '([^\/]+)';
+Navigo.REPLACE_WILDCARD = '(?:.*)';
+Navigo.FOLLOWED_BY_SLASH_REGEXP = '(?:\/$|$)';
+Navigo.MATCH_REGEXP_FLAGS = '';
+
+return Navigo;
+
+})));
+
 /*! Select2 4.0.6-rc.1 | https://github.com/select2/select2/blob/master/LICENSE.md */
 
 (function(){if(jQuery&&jQuery.fn&&jQuery.fn.select2&&jQuery.fn.select2.amd)var e=jQuery.fn.select2.amd;return e.define("select2/i18n/ru",[],function(){function e(e,t,n,r){return e%10<5&&e%10>0&&e%100<5||e%100>20?e%10>1?n:t:r}return{errorLoading:function(){return"Невозможно загрузить результаты"},inputTooLong:function(t){var n=t.input.length-t.maximum,r="Пожалуйста, введите на "+n+" символ";return r+=e(n,"","a","ов"),r+=" меньше",r},inputTooShort:function(t){var n=t.minimum-t.input.length,r="Пожалуйста, введите еще хотя бы "+n+" символ";return r+=e(n,"","a","ов"),r},loadingMore:function(){return"Загрузка данных…"},maximumSelected:function(t){var n="Вы можете выбрать не более "+t.maximum+" элемент";return n+=e(t.maximum,"","a","ов"),n},noResults:function(){return"Совпадений не найдено"},searching:function(){return"Поиск…"}}}),{define:e.define,require:e.require}})();
@@ -3707,6 +4177,334 @@ return Template7;
 //# sourceMappingURL=template7.js.map
 
 /**
+ * Загрузочный скрипт приложения
+ *
+ * @version 27.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект главного скрипта
+ *
+ * @type {object}
+ */
+var lemurro = {};
+/**
+ * Запуск ядра
+ *
+ * @version 27.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.start = function () {
+    // Инициализация роутера
+    lemurro.router = new Navigo(location.protocol + '//' + location.host, app.config.router.useHash, app.config.router.hash);
+
+    // Подключаем маршруты
+    lemurro.router.on(app.routes.pages);
+
+    // Маршрут не найден
+    lemurro.router.notFound(app.routes.notFound);
+
+    // Подключаем хуки
+    lemurro.router.hooks({
+        after: function () {
+            if (app.started) {
+                lemurro._loadPage();
+            } else {
+                lemurro.init();
+            }
+        }
+    });
+
+    // Запускаем роутер
+    lemurro.router.resolve();
+};
+/**
+ * Событие отправки javascript-ошибки при возникновении
+ *
+ * @version 15.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindJSerrors = function () {
+    /**
+     * Отправка javascript-ошибки
+     *
+     * @param {string} msg
+     * @param {string} file
+     * @param {string} line
+     * @param {string} col
+     * @param {string} err
+     *
+     * @version 15.11.2018
+     * @author  Дмитрий Щербаков <atomcms@ya.ru>
+     */
+    function sendError(msg, file, line, col, err) {
+        var errString = 'JSON not found';
+        if (window.JSON) {
+            errString = JSON.stringify(err);
+        }
+
+        if (typeof(msg) === 'object') {
+            file      = msg.filename;
+            line      = msg.lineno;
+            col       = msg.colno;
+            errString = msg.error.stack;
+            msg       = msg.message;
+        }
+
+        new Image().src = app.config.apiUrl + 'jserrors?msg=' + encodeURIComponent(msg) + '&file=' + encodeURIComponent(file) + '&line=' + encodeURIComponent(line) + '&col=' + encodeURIComponent(col) + '&err=' + encodeURIComponent(errString);
+    }
+
+    if (window.addEventListener) {
+        window.addEventListener('error', sendError, false);
+    } else if (window.attachEvent) {
+        window.attachEvent('onerror', sendError);
+    } else {
+        window.onerror = sendError;
+    }
+};
+/**
+ * Подключим Select2
+ *
+ * @version 27.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindSelect2 = function () {
+    $('#js-page').find('.js-select2').each(function () {
+        $(this).select2({
+            language   : 'ru',
+            placeholder: 'Выберите из списка'
+        });
+    });
+};
+/**
+ * Подключим jQuery.TableFilter
+ *
+ * @version 27.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindTableFilter = function () {
+    $('#js-page').find('.tablefilter').TableFilter();
+};
+/**
+ * Инициируем форму входа
+ *
+ * @version 27.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._initAuthForm = function () {
+    var authForm  = $('#js-auth');
+    var getForm   = $('#js-auth__get-form');
+    var checkForm = $('#js-auth__check-form');
+    var authType  = app.config.auth.type;
+    var strings   = app.config.auth.strings[authType];
+
+    getForm.find('.js-auth__auth-id').html(strings.getForm.inputLabel);
+    getForm.find('input[name="auth_id"]').addClass(strings.getForm.inputClass);
+
+    checkForm.find('.js-auth__auth-code').html(strings.checkForm.inputLabel);
+    checkForm.find('.js-auth__repeat').html(strings.checkForm.repeatMessage);
+
+    authForm.find('.js-code-mask').each(function () {
+        var element = $(this);
+
+        Inputmask({
+            'mask': '9999'
+        }).mask(element);
+    });
+
+    authForm.find('.js-phone-mask').each(function () {
+        var element = $(this);
+
+        Inputmask({
+            'mask': '+7 (999) 999-99-99'
+        }).mask(element);
+    });
+};
+/**
+ * Определим загруженную страницу и запустим ее init() если он есть
+ *
+ * @version 29.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._loadPage = function () {
+    var pageFile = location.protocol + '//' + location.host + '/' + app.page.name + '.html';
+
+    document.title = app.page.title + ' | ' + app.config.title;
+
+    // Сбросим активность со всех ссылок
+    $('header').find('.js-link').each(function () {
+        var link = $(this);
+
+        link.removeClass(link.attr('data-active-class'));
+    });
+
+    $('#js-page').load(pageFile, function () {
+        // Установим активность ссылок с определенным классом
+        $('header').find('.js-link__' + app.page.name).each(function () {
+            var link = $(this);
+
+            link.addClass(link.attr('data-active-class'));
+        });
+
+        // Обновление ссылок маршрутизатора
+        lemurro.router.updatePageLinks();
+
+        lemurro._bindSelect2();
+        lemurro._bindTableFilter();
+        console.log(app.page);
+        if (!isEmpty(app.page.onLoad)) {
+            console.log('fired app.page.onLoad();');
+            app.page.onLoad();
+        }
+    });
+};
+/**
+ * Инициализация ядра
+ *
+ * @version 29.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.init = function () {
+    /**
+     * ИД сессии
+     *
+     * @type {string}
+     */
+    lemurro.sessionID = '';
+
+    /**
+     * Информация о пользователе
+     *
+     * @type {object}
+     */
+    lemurro.userinfo = {};
+
+    /**
+     * Инициализируем плагин LightAjax
+     *
+     * @type {object}
+     */
+    lemurro.lightajax = new LightAjax({
+        callbackAlert: function (title, message) {
+            swal(title, message, 'error');
+        },
+        ajax         : {
+            beforeSend: function (xhr, settings) {
+                if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                    xhr.setRequestHeader("X-SESSION-ID", lemurro.sessionID);
+                }
+            }
+        }
+    });
+
+    // Ловим js-ошибки
+    lemurro._bindJSerrors();
+
+    // Инициализируем форму входа
+    lemurro._initAuthForm();
+
+    // Достанем из локального хранилища ИД сессии, если есть
+    localforage.getItem('sessionID', function (err, value) {
+        lemurro.sessionID = value;
+        lemurro.auth.check();
+    });
+
+    // Достанем из локального хранилища ИД прошлой сессии, если есть
+    localforage.getItem('lastSessionID', function (err, value) {
+        if (value !== null) {
+            $('#js-user-return').removeClass('d-none');
+        }
+    });
+};
+/**
+ * Покажем форму входа
+ *
+ * @version 29.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.authScreen = function (action) {
+    var modal = $('#js-auth');
+
+    if (action === 'show') {
+        document.title = app.config.title;
+
+        $('#js-auth__get-form').show();
+        $('#js-auth__check-form').hide();
+
+        modal.find('input[type="text"]').val('');
+
+        modal.modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+    } else {
+        modal.modal('hide');
+    }
+};
+/**
+ * Отображение ошибок
+ *
+ * @param {array} errors Массив ошибок
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.showErrors = function (errors) {
+    if (errors.length === 1 && errors[0].status === '401 Unauthorized') {
+        lemurro.authScreen('show');
+    } else if (errors.length === 1 && errors[0].status === '403 Forbidden') {
+        var redirect = true;
+
+        if (errors[0].hasOwnProperty('meta') && errors[0].meta.hasOwnProperty('redirect')) {
+            redirect = errors[0].meta.redirect;
+        }
+
+        if (redirect) {
+            lemurro.router.navigate('/403');
+        } else {
+            lemurro._showError(errors[0].code, errors[0].title);
+        }
+    } else {
+        for (var i in errors) {
+            lemurro._showError(errors[i].code, errors[i].title);
+        }
+    }
+};
+
+/**
+ * Покажем ошибку
+ *
+ * @param {string} errCode  Код ошибки
+ * @param {string} errTitle Текст ошибки
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._showError = function (errCode, errTitle) {
+    var title = 'Неизвестная ошибка';
+    var code  = 'error';
+
+    switch (errCode) {
+        case 'danger':
+            code  = 'error';
+            title = 'Критическая ошибка';
+            break;
+
+        case 'warning':
+            code  = 'warning';
+            title = 'Внимание!';
+            break;
+
+        case 'info':
+            code  = 'info';
+            title = 'Информация';
+            break;
+    }
+
+    swal(title, errTitle, code);
+};
+/**
  * Проверка сессии при запуске приложения
  *
  * @version 26.10.2018
@@ -3728,6 +4526,27 @@ lemurro.auth = {};
  * @public
  */
 lemurro.auth._timerID = null;
+/**
+ * Получим информацию о пользователе
+ *
+ * @version 29.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth._getUser = function () {
+    lemurro.lightajax.get(false, app.config.apiUrl + 'user', {}, function (result) {
+        if (result.hasOwnProperty('errors')) {
+            lemurro.lightajax.preloader('hide');
+
+            lemurro.showErrors(result.errors);
+        } else {
+            lemurro.lightajax.preloader('hide');
+
+            lemurro.userinfo = result.data;
+
+            lemurro.auth._success();
+        }
+    });
+};
 /**
  * Запуск таймера
  *
@@ -3754,30 +4573,73 @@ lemurro.auth._runTimer = function () {
     }, 1000);
 };
 /**
+ * Проверка сессии и загрузка данных о пользователе прошли успешно
+ *
+ * @version 29.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth._success = function () {
+    var body = $('body');
+
+    // Установим идентификатор пользователя в верхнем меню
+    $('.js-user__auth-id').text(lemurro.userinfo.auth_id);
+
+    // Если пользователь админ, включим все возможности
+    if (lemurro.userinfo.admin) {
+        body.find('.js-role').removeClass('d-none');
+    } else {
+        for (var pageID in lemurro.userinfo.roles) {
+            if (lemurro.userinfo.roles.hasOwnProperty(pageID)) {
+                for (var i in lemurro.userinfo.roles[pageID]) {
+                    if (lemurro.userinfo.roles[pageID].hasOwnProperty(i)) {
+                        var access = lemurro.userinfo.roles[pageID][i];
+
+                        body.find('.js-role__' + pageID + '--' + access).removeClass('d-none');
+                    }
+                }
+            }
+        }
+    }
+
+    // Приложение успешно стартовало
+    app.started = true;
+
+    // Скрываем более ненужный оверлей прелоадера
+    $('#js-preloader-overlay').hide();
+
+    // Запустим инициализацию приложения
+    app.init();
+
+    // Загрузим страницу определённую маршрутизатором
+    lemurro._loadPage();
+};
+/**
  * Проверка сессии
  *
- * @version 28.10.2018
+ * @version 29.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.check = function () {
-    lemurro.lightajax.get(false, pathServerAPI + 'auth/check', {}, function (result) {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'auth/check', {}, function (result) {
         if (result.hasOwnProperty('errors')) {
+            lemurro.lightajax.preloader('hide');
+
             lemurro.showErrors(result.errors);
         } else {
-            lemurro.initPage();
+            lemurro.auth._getUser();
         }
     });
 };
 /**
  * Проверка введенного кода
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.checkCode = function () {
     var browser = bowser.getParser(window.navigator.userAgent);
 
-    lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
+    lemurro.lightajax.post(true, app.config.apiUrl + 'auth/code', {
         'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
         'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
         'device_info': {
@@ -3806,11 +4668,11 @@ lemurro.auth.checkCode = function () {
 /**
  * Получение кода
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.getCode = function () {
-    lemurro.lightajax.get(true, pathServerAPI + 'auth/code', {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'auth/code', {
         'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -4037,7 +4899,7 @@ lemurro.tabs.tabInsertEdit = function (action) {
 /**
  * Операции со справочниками
  *
- * @version 26.10.2018
+ * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -4047,40 +4909,48 @@ lemurro.tabs.tabInsertEdit = function (action) {
  * @type {object}
  */
 lemurro.guide = {};
-
 /**
  * Инициализация
  *
- * @version 26.10.2018
+ * @param {string} pageName Суффикс файла html: guide_[pageName].html
+ * @param {string} jsClass  js-класс справочника
+ *
+ * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-lemurro.guide.init = function () {
+lemurro.guide.init = function (pageName, jsClass) {
     /**
-     * Тип справочника
+     * Имя справочника
      *
      * @type {string}
      */
-    lemurro.guide.type = $('#js-page').attr('data-type');
+    lemurro.guide._name = pageName;
+
+    /**
+     * Класс справочника
+     *
+     * @type {string}
+     */
+    lemurro.guide._class = jsClass;
 
     /**
      * Объект для хранения шаблонов
      *
      * @type {object}
      */
-    lemurro.guide.templates = {
-        item: Template7.compile($('#js-tpl-guide__item').html())
-    };
+    lemurro.guide._templates = {};
 
-    lemurro.guide._getData();
+    // Загрузим справочник
+    lemurro.guide._load();
 };
 /**
  * Список элементов справочника
  *
- * @version 26.10.2018
+ * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide._getData = function () {
-    lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide.type, {}, function (result) {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'guide/' + lemurro.guide._name, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -4094,7 +4964,7 @@ lemurro.guide._getData = function () {
                 var html = '';
 
                 for (var i in result.data.items) {
-                    html += lemurro.guide.templates.item(result.data.items[i]);
+                    html += lemurro.guide._templates.item(result.data.items[i]);
                 }
 
                 $('#js-guide__items').html(html);
@@ -4102,13 +4972,51 @@ lemurro.guide._getData = function () {
             }
 
             if (
-                result.data.js_class !== undefined
-                && window.hasOwnProperty(result.data.js_class)
-                && window[result.data.js_class].hasOwnProperty('init')
+                !isEmpty(lemurro.guide._class)
+                &&
+                window.hasOwnProperty(lemurro.guide._class)
+                &&
+                window[lemurro.guide._class].hasOwnProperty('init')
             ) {
-                window[result.data.js_class].init();
+                window[lemurro.guide._class].init();
             }
         }
+    });
+};
+/**
+ * Загрузка справочника
+ *
+ * @version 06.12.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.guide._load = function () {
+    var page     = $('#js-page');
+    var pageFile = location.protocol + '//' + location.host + '/guide_' + lemurro.guide._name + '.html';
+
+    page.find('.js-guide__title').html(app.page.title);
+
+    // Сбросим активность со всех ссылок
+    page.find('.js-guide-link').each(function () {
+        var link = $(this);
+
+        link.removeClass(link.attr('data-active-class'));
+    });
+
+    page.find('.js-guide__content').load(pageFile, function () {
+        // Установим активность ссылок с определенным классом
+        page.find('.js-guide-link__' + lemurro.guide._name).each(function () {
+            var link = $(this);
+
+            link.addClass(link.attr('data-active-class'));
+        });
+
+        // Скомпилируем шаблоны
+        lemurro.guide._templates = {
+            item: Template7.compile($('#js-tpl-guide__item').html())
+        };
+
+        // Получим данные справочника
+        lemurro.guide._getData();
     });
 };
 /**
@@ -4117,11 +5025,11 @@ lemurro.guide._getData = function () {
  * @param {integer}  id       ИД записи
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.edit = function (id, callback) {
-    lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide.type + '/' + id, {}, function (result) {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'guide/' + lemurro.guide._name + '/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -4149,11 +5057,11 @@ lemurro.guide.edit = function (id, callback) {
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.insert = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide.type, {
+    lemurro.lightajax.post(true, app.config.apiUrl + 'guide/' + lemurro.guide._name, {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -4172,7 +5080,7 @@ lemurro.guide.insert = function (data, callback) {
  * @param {string}   name     Имя записи
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.remove = function (id, name, callback) {
@@ -4185,7 +5093,7 @@ lemurro.guide.remove = function (id, name, callback) {
         cancelButtonText : 'Отмена'
     }).then(function (result) {
         if (result.value) {
-            lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide.type + '/' + id + '/remove', {}, function (result) {
+            lemurro.lightajax.post(true, app.config.apiUrl + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (result) {
                 lemurro.lightajax.preloader('hide');
 
                 if (result.hasOwnProperty('errors')) {
@@ -4205,11 +5113,11 @@ lemurro.guide.remove = function (id, name, callback) {
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.save = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide.type + '/' + data.id, {
+    lemurro.lightajax.post(true, app.config.apiUrl + 'guide/' + lemurro.guide._name + '/' + data.id, {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -4248,7 +5156,7 @@ lemurro.guide.showInsertForm = function (callback) {
 /**
  * Работа с пользователями
  *
- * @version 26.10.2018
+ * @version 21.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -4258,17 +5166,70 @@ lemurro.guide.showInsertForm = function (callback) {
  * @type {object}
  */
 lemurro.users = {};
+
+/**
+ * Инициализация
+ *
+ * @version 21.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.users.init = function () {
+    /**
+     * Объект для хранения шаблонов
+     *
+     * @type {object}
+     */
+    lemurro.users._templates = {
+        roles: Template7.compile($('#js-tpl-user__roles').html())
+    };
+
+    lemurro.users._setRoles();
+};
+/**
+ * Нарисуем форму выбора прав доступа
+ *
+ * @version 30.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.users._setRoles = function () {
+    var container = $('#js-user__roles');
+    var userRoles = app.config.userRoles;
+
+    for (var pageCode in userRoles.guidePages) {
+        if (userRoles.guidePages.hasOwnProperty(pageCode) && userRoles.list.hasOwnProperty(pageCode)) {
+            var pageName = userRoles.guidePages[pageCode];
+            var list     = userRoles.list[pageCode];
+            var access   = [];
+
+            for (var i in list) {
+                var code = list[i];
+                var name = (userRoles.guideAccess.hasOwnProperty(code) ? userRoles.guideAccess[code] : '!unknown');
+
+                access.push({
+                    code: code,
+                    name: name
+                });
+            }
+
+            container.append(lemurro.users._templates.roles({
+                pageName: pageName,
+                pageCode: pageCode,
+                access  : access
+            }));
+        }
+    }
+};
 /**
  * Редактирование
  *
  * @param {integer}  id       ИД пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.edit = function (id, callback) {
-    lemurro.lightajax.get(true, pathServerAPI + 'users/' + id, {}, function (result) {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'users/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -4293,11 +5254,11 @@ lemurro.users.edit = function (id, callback) {
 /**
  * Список пользователей
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.getData = function () {
-    lemurro.lightajax.get(true, pathServerAPI + 'users', {}, function (result) {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'users', {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -4325,11 +5286,11 @@ lemurro.users.getData = function () {
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.insert = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'users', {
+    lemurro.lightajax.post(true, app.config.apiUrl + 'users', {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -4346,7 +5307,7 @@ lemurro.users.insert = function (data, callback) {
  *
  * @param {integer} id ИД пользователя
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.loginByUser = function (id) {
@@ -4359,7 +5320,7 @@ lemurro.users.loginByUser = function (id) {
         cancelButtonText : 'Нет'
     }).then(function (result) {
         if (result.value) {
-            lemurro.lightajax.post(true, pathServerAPI + 'users/login_by_user', {
+            lemurro.lightajax.post(true, app.config.apiUrl + 'users/login_by_user', {
                 user_id: id
             }, function (result) {
                 lemurro.lightajax.preloader('hide');
@@ -4384,7 +5345,7 @@ lemurro.users.loginByUser = function (id) {
  * @param {string}   name     Имя пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.remove = function (id, name, callback) {
@@ -4397,7 +5358,7 @@ lemurro.users.remove = function (id, name, callback) {
         cancelButtonText : 'Отмена'
     }).then(function (result) {
         if (result.value) {
-            lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/remove', {}, function (result) {
+            lemurro.lightajax.post(true, app.config.apiUrl + 'users/' + id + '/remove', {}, function (result) {
                 lemurro.lightajax.preloader('hide');
 
                 if (result.hasOwnProperty('errors')) {
@@ -4451,11 +5412,11 @@ lemurro.users.return = function () {
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.save = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'users/' + data.id, {
+    lemurro.lightajax.post(true, app.config.apiUrl + 'users/' + data.id, {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -4490,319 +5451,4 @@ lemurro.users.showInsertForm = function (callback) {
     lemurro.tabs.tabInsertEdit('show');
 
     callback();
-};
-/**
- * Загрузочный скрипт приложения
- *
- * @version 28.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект главного скрипта
- *
- * @type {object}
- */
-var lemurro = {};
-
-/**
- * Настройки
- *
- * @type {object}
- */
-lemurro.settings = {};
-
-/**
- * ИД сессии
- *
- * @type {string}
- */
-lemurro.sessionID = '';
-
-/**
- * Объект для выполнения Ajax-запросов
- *
- * @type {object}
- */
-lemurro.lightajax = {};
-
-/**
- * Инициализация
- *
- * @param {object} options Параметры
- *
- * @version 28.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.init = function (options) {
-    lemurro.settings = Object.assign({
-        onLoad: function () {
-            // Выполняет код после загрузки приложения, перед загрузкой страницы
-        }
-    }, options);
-
-    lemurro._bindJSerrors();
-
-    // Инициализируем плагин LightAjax
-    lemurro.lightajax = new LightAjax({
-        callbackAlert: function (title, message) {
-            swal(title, message, 'error');
-        },
-        ajax         : {
-            beforeSend: function (xhr, settings) {
-                if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
-                    xhr.setRequestHeader("X-SESSION-ID", lemurro.sessionID);
-                }
-            }
-        }
-    });
-
-    lemurro._bindCodeMask();
-    lemurro._bindPhoneMask();
-    lemurro._bindSelect2();
-    lemurro._bindTableFilter();
-
-    // Достанем из локального хранилища ИД сессии, если есть
-    localforage.getItem('sessionID', function (err, value) {
-        lemurro.sessionID = value;
-        lemurro.auth.check();
-    });
-
-    // Достанем из локального хранилища ИД прошлой сессии, если есть
-    localforage.getItem('lastSessionID', function (err, value) {
-        if (value !== null) {
-            $('#js-user-return').show();
-        }
-    });
-};
-/**
- * Создадим маску для кода авторизации
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindCodeMask = function () {
-    $('.js-code-mask').each(function () {
-        var element = $(this);
-
-        Inputmask({
-            'mask': '9999'
-        }).mask(element);
-    });
-};
-/**
- * Событие отправки javascript-ошибки при возникновении
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindJSerrors = function () {
-    /**
-     * Отправка javascript-ошибки
-     *
-     * @param {string} msg
-     * @param {string} file
-     * @param {string} line
-     * @param {string} col
-     * @param {string} err
-     *
-     * @version 17.04.2018
-     * @author  Дмитрий Щербаков <atomcms@ya.ru>
-     */
-    function sendError(msg, file, line, col, err) {
-        var errString = 'JSON not found';
-        if (window.JSON) {
-            errString = JSON.stringify(err);
-        }
-
-        if (typeof(msg) === 'object') {
-            file      = msg.filename;
-            line      = msg.lineno;
-            col       = msg.colno;
-            errString = msg.error.stack;
-            msg       = msg.message;
-        }
-
-        new Image().src = pathServerAPI + 'jserrors?msg=' + encodeURIComponent(msg) + '&file=' + encodeURIComponent(file) + '&line=' + encodeURIComponent(line) + '&col=' + encodeURIComponent(col) + '&err=' + encodeURIComponent(errString);
-    }
-
-    if (window.addEventListener) {
-        window.addEventListener('error', sendError, false);
-    } else if (window.attachEvent) {
-        window.attachEvent('onerror', sendError);
-    } else {
-        window.onerror = sendError;
-    }
-};
-/**
- * Создадим маску для телефона
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindPhoneMask = function () {
-    $('.js-phone-mask').each(function () {
-        var element = $(this);
-
-        Inputmask({
-            'mask': '+7 (999) 999-99-99'
-        }).mask(element);
-    });
-};
-/**
- * Подключим Select2
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindSelect2 = function () {
-    $('.js-select2').each(function () {
-        $(this).select2({
-            language   : 'ru',
-            placeholder: 'Выберите из списка'
-        });
-    });
-};
-/**
- * Подключим jQuery.TableFilter
- *
- * @version 28.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._bindTableFilter = function () {
-    $('.tablefilter').TableFilter();
-};
-/**
- * Покажем форму входа
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.authScreen = function (action) {
-    var modal = $('#js-auth');
-
-    if (action === 'show') {
-        $('#js-auth__get-form').show();
-        $('#js-auth__check-form').hide();
-
-        modal.find('input[type="text"]').val('');
-
-        modal.modal({
-            backdrop: 'static',
-            keyboard: false
-        });
-    } else {
-        modal.modal('hide');
-    }
-};
-/**
- * Определим загруженную страницу и запустим ее init() если он есть
- *
- * @version 28.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.initPage = function () {
-    lemurro.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            lemurro.userinfo = result.data;
-
-            $('.js-user__auth-id').text(lemurro.userinfo.auth_id);
-
-            if (lemurro.userinfo.admin) {
-                $('body').find('.js-role').show();
-            } else {
-                for (var pageID in lemurro.userinfo.roles) {
-                    if (lemurro.userinfo.roles[pageID].indexOf('read') !== -1) {
-                        $('body').find('.js-role__' + pageID).show();
-                    }
-                }
-            }
-
-            lemurro.settings.onLoad();
-
-            var page = $('#js-page');
-
-            if (page.length > 0) {
-                var pageName = page.attr('data-page');
-
-                if (pageName === 'lemurro.guide') {
-                    if (window.hasOwnProperty('lemurro') && window.lemurro.hasOwnProperty('guide') && window.lemurro.guide.hasOwnProperty('init')) {
-                        lemurro.guide.init();
-                    }
-                } else {
-                    var pageScript = window[pageName];
-
-                    if (pageScript !== undefined) {
-                        if (pageScript.hasOwnProperty('init')) {
-                            pageScript.init();
-                        }
-                    }
-                }
-            }
-        }
-    });
-};
-/**
- * Отображение ошибок
- *
- * @param {array} errors Массив ошибок
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.showErrors = function (errors) {
-    if (errors.length === 1 && errors[0].status === '401 Unauthorized') {
-        lemurro.authScreen('show');
-    } else if (errors.length === 1 && errors[0].status === '403 Forbidden') {
-        var redirect = true;
-
-        if (errors[0].hasOwnProperty('meta') && errors[0].meta.hasOwnProperty('redirect')) {
-            redirect = errors[0].meta.redirect;
-        }
-
-        if (redirect) {
-            location.assign(location.origin + '/403');
-        } else {
-            lemurro._showError(errors[0].code, errors[0].title);
-        }
-    } else {
-        for (var i in errors) {
-            lemurro._showError(errors[i].code, errors[i].title);
-        }
-    }
-};
-
-/**
- * Покажем ошибку
- *
- * @param {string} errCode  Код ошибки
- * @param {string} errTitle Текст ошибки
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro._showError = function (errCode, errTitle) {
-    var title = 'Неизвестная ошибка';
-    var code  = 'error';
-
-    switch (errCode) {
-        case 'danger':
-            code  = 'error';
-            title = 'Критическая ошибка';
-            break;
-
-        case 'warning':
-            code  = 'warning';
-            title = 'Внимание!';
-            break;
-
-        case 'info':
-            code  = 'info';
-            title = 'Информация';
-            break;
-    }
-
-    swal(title, errTitle, code);
 };

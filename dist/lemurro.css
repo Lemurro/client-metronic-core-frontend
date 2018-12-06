@@ -92,16 +92,6 @@
         box-shadow: 0 -3em 0 0, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0 0 0, -2em -2em 0 0.2em;
     }
 }
-/*
-// db   db d88888b db      d8888b. d88888b d8888b. .d8888.
-// 88   88 88'     88      88  `8D 88'     88  `8D 88'  YP
-// 88ooo88 88ooooo 88      88oodD' 88ooooo 88oobY' `8bo.
-// 88~~~88 88~~~~~ 88      88~~~   88~~~~~ 88`8b     `Y8b.
-// 88   88 88.     88booo. 88      88.     88 `88. db   8D
-// YP   YP Y88888P Y88888P 88      Y88888P 88   YD `8888Y'
-//
-//
-*/
 .w1 {
     width: 1px;
 }
@@ -113,22 +103,21 @@
 .font-100 {
     font-size: 100px;
 }
-/*
-//  .d8b.  db    db d888888b db   db
-// d8' `8b 88    88 `~~88~~' 88   88
-// 88ooo88 88    88    88    88ooo88
-// 88~~~88 88    88    88    88~~~88
-// 88   88 88b  d88    88    88   88
-// YP   YP ~Y8888P'    YP    YP   YP
-//
-//
-*/
 .auth__logo {
     text-align: center;
 }
 
 .auth__logo img {
     width: 80%;
+}
+.preloader-overlay {
+    position: fixed;
+    z-index: 500;
+    background: #fff;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 .has-danger input,
 .has-danger textarea,

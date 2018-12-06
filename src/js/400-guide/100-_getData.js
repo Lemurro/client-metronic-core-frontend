@@ -1,11 +1,11 @@
 /**
  * Список элементов справочника
  *
- * @version 26.10.2018
+ * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide._getData = function () {
-    lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide.type, {}, function (result) {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'guide/' + lemurro.guide._name, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -19,7 +19,7 @@ lemurro.guide._getData = function () {
                 var html = '';
 
                 for (var i in result.data.items) {
-                    html += lemurro.guide.templates.item(result.data.items[i]);
+                    html += lemurro.guide._templates.item(result.data.items[i]);
                 }
 
                 $('#js-guide__items').html(html);
@@ -27,11 +27,13 @@ lemurro.guide._getData = function () {
             }
 
             if (
-                result.data.js_class !== undefined
-                && window.hasOwnProperty(result.data.js_class)
-                && window[result.data.js_class].hasOwnProperty('init')
+                !isEmpty(lemurro.guide._class)
+                &&
+                window.hasOwnProperty(lemurro.guide._class)
+                &&
+                window[lemurro.guide._class].hasOwnProperty('init')
             ) {
-                window[result.data.js_class].init();
+                window[lemurro.guide._class].init();
             }
         }
     });

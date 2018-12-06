@@ -20,6 +20,7 @@ var jsLibs = [
     'node_modules/jquery-lightajax/dist/jquery.lightajax.js',
     'node_modules/jquery-tablefilter/dist/jquery.tablefilter.js',
     'node_modules/localforage/dist/localforage.js',
+    'node_modules/navigo/lib/navigo.js',
     'node_modules/select2/dist/js/i18n/ru.js',
     'node_modules/template7/dist/template7.js'
 ];
@@ -30,6 +31,7 @@ var jsLibsMin = [
     'node_modules/jquery-lightajax/dist/jquery.lightajax.min.js',
     'node_modules/jquery-tablefilter/dist/jquery.tablefilter.min.js',
     'node_modules/localforage/dist/localforage.min.js',
+    'node_modules/navigo/lib/navigo.min.js',
     'node_modules/select2/dist/js/i18n/ru.js',
     'node_modules/template7/dist/template7.min.js'
 ];
@@ -71,11 +73,27 @@ gulp.task('clean', function () {
 // WATCHER
 
 gulp.task('watcher.css', function () {
-    return gulp.watch('src/css/*.css', ['css']);
+    return gulp.watch('src/css/*.css', function () {
+        runSequence(
+            'core.css',
+            'core.min.css',
+            'concat.css',
+            'concat.min.css',
+            'clean'
+        );
+    });
 });
 
 gulp.task('watcher.js', function () {
-    return gulp.watch('src/js/**/*.js', ['js']);
+    return gulp.watch('src/js/**/*.js', function () {
+        runSequence(
+            'core.js',
+            'core.min.js',
+            'concat.js',
+            'concat.min.js',
+            'clean'
+        );
+    });
 });
 
 // CSS

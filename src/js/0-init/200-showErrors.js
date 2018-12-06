@@ -17,7 +17,7 @@ lemurro.showErrors = function (errors) {
         }
 
         if (redirect) {
-            location.assign(location.origin + '/403');
+            lemurro.router.navigate('/403');
         } else {
             lemurro._showError(errors[0].code, errors[0].title);
         }

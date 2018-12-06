@@ -1,11 +1,11 @@
 /**
  * Получение кода
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.getCode = function () {
-    lemurro.lightajax.get(true, pathServerAPI + 'auth/code', {
+    lemurro.lightajax.get(true, app.config.apiUrl + 'auth/code', {
         'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
     }, function (result) {
         lemurro.lightajax.preloader('hide');

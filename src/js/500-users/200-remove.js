@@ -5,7 +5,7 @@
  * @param {string}   name     Имя пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
+ * @version 15.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.remove = function (id, name, callback) {
@@ -18,7 +18,7 @@ lemurro.users.remove = function (id, name, callback) {
         cancelButtonText : 'Отмена'
     }).then(function (result) {
         if (result.value) {
-            lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/remove', {}, function (result) {
+            lemurro.lightajax.post(true, app.config.apiUrl + 'users/' + id + '/remove', {}, function (result) {
                 lemurro.lightajax.preloader('hide');
 
                 if (result.hasOwnProperty('errors')) {
