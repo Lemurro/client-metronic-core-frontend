@@ -1,7 +1,7 @@
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 29.11.2018
+ * @version 07.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro._loadPage = function () {
@@ -29,9 +29,8 @@ lemurro._loadPage = function () {
 
         lemurro._bindSelect2();
         lemurro._bindTableFilter();
-        console.log(app.page);
+
         if (!isEmpty(app.page.onLoad)) {
-            console.log('fired app.page.onLoad();');
             app.page.onLoad();
         }
     });
