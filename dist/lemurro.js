@@ -4220,6 +4220,21 @@ lemurro.start = function () {
     lemurro.router.resolve();
 };
 /**
+ * Подключим Inputmask
+ *
+ * @version 11.12.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro._bindInputmask = function () {
+    $('#js-page').find('.js-mask').each(function () {
+        var element = $(this);
+
+        Inputmask({
+            'mask': element.attr('data-mask')
+        }).mask(element);
+    });
+};
+/**
  * Событие отправки javascript-ошибки при возникновении
  *
  * @version 15.11.2018
@@ -4324,7 +4339,7 @@ lemurro._initAuthForm = function () {
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 07.12.2018
+ * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro._loadPage = function () {
@@ -4350,6 +4365,7 @@ lemurro._loadPage = function () {
         // Обновление ссылок маршрутизатора
         lemurro.router.updatePageLinks();
 
+        lemurro._bindInputmask();
         lemurro._bindSelect2();
         lemurro._bindTableFilter();
 
@@ -5177,7 +5193,7 @@ lemurro.guide.showInsertForm = function (callback) {
 /**
  * Работа с пользователями
  *
- * @version 21.11.2018
+ * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -5191,7 +5207,7 @@ lemurro.users = {};
 /**
  * Инициализация
  *
- * @version 21.11.2018
+ * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.init = function () {
@@ -5204,40 +5220,39 @@ lemurro.users.init = function () {
         roles: Template7.compile($('#js-tpl-user__roles').html())
     };
 
-    lemurro.users._setRoles();
+    lemurro.users._initRoles();
+    users.init();
 };
 /**
  * Нарисуем форму выбора прав доступа
  *
- * @version 30.11.2018
+ * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-lemurro.users._setRoles = function () {
+lemurro.users._initRoles = function () {
     var container = $('#js-user__roles');
     var userRoles = app.config.userRoles;
 
-    for (var pageCode in userRoles.guidePages) {
-        if (userRoles.guidePages.hasOwnProperty(pageCode) && userRoles.list.hasOwnProperty(pageCode)) {
-            var pageName = userRoles.guidePages[pageCode];
-            var list     = userRoles.list[pageCode];
-            var access   = [];
+    for (var keyList in userRoles.list) {
+        var role   = userRoles.list[keyList];
+        var access = [];
 
-            for (var i in list) {
-                var code = list[i];
-                var name = (userRoles.guideAccess.hasOwnProperty(code) ? userRoles.guideAccess[code] : '!unknown');
 
-                access.push({
-                    code: code,
-                    name: name
-                });
-            }
+        for (var keyAccess in role.access) {
+            var code = role.access[keyAccess];
+            var name = (userRoles.guideAccess.hasOwnProperty(code) ? userRoles.guideAccess[code] : '!unknown');
 
-            container.append(lemurro.users._templates.roles({
-                pageName: pageName,
-                pageCode: pageCode,
-                access  : access
-            }));
+            access.push({
+                code: code,
+                name: name
+            });
         }
+
+        container.append(lemurro.users._templates.roles({
+            roleName : role.name,
+            roleTitle: role.title,
+            access   : access
+        }));
     }
 };
 /**
@@ -5300,6 +5315,40 @@ lemurro.users.getData = function () {
             });
         }
     });
+};
+/**
+ * Получение отмеченных ролей пользователя
+ *
+ * @param {jQuery} form Элемент формы
+ *
+ * @return {object}
+ *
+ * @version 11.12.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.users.getRoles = function (form) {
+    var roles = {};
+
+    form.find('.js-role:checked').each(function () {
+        var elem = $(this);
+        var role = elem.attr('data-role');
+
+        if (role === 'admin') {
+            roles.admin = true;
+        } else {
+            if (!roles.hasOwnProperty(role)) {
+                roles[role] = [];
+            }
+
+            roles[role].push(elem.attr('data-access'));
+        }
+    });
+
+    if (roles.hasOwnProperty('admin')) {
+        roles = {admin: true};
+    }
+
+    return roles;
 };
 /**
  * Добавление
@@ -5448,6 +5497,28 @@ lemurro.users.save = function (data, callback) {
             callback(result);
         }
     });
+};
+/**
+ * Установка ролей пользователя (отметка checkbox)
+ *
+ * @param {jQuery} form  Элемент формы
+ * @param {object} roles Список ролей пользователя
+ *
+ * @version 11.12.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.users.setRoles = function (form, roles) {
+    form.find('.js-role').prop('checked', false);
+
+    for (var role in roles) {
+        if (role === 'admin') {
+            form.find('.js-role[data-role="admin"]').prop('checked', true);
+        } else {
+            for (var i in roles[role]) {
+                form.find('.js-role[data-role="' + role + '"][data-access="' + roles[role][i] + '"]').prop('checked', true);
+            }
+        }
+    }
 };
 /**
  * Покажем форму добавления
