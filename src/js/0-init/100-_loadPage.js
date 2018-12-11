@@ -1,7 +1,7 @@
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 07.12.2018
+ * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro._loadPage = function () {
@@ -27,6 +27,7 @@ lemurro._loadPage = function () {
         // Обновление ссылок маршрутизатора
         lemurro.router.updatePageLinks();
 
+        lemurro._bindInputmask();
         lemurro._bindSelect2();
         lemurro._bindTableFilter();
 
