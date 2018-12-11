@@ -4,7 +4,7 @@
  * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-lemurro.users._setRoles = function () {
+lemurro.users._initRoles = function () {
     var container = $('#js-user__roles');
     var userRoles = app.config.userRoles;
 
