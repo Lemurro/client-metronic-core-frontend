@@ -29,4 +29,5 @@ lemurro.users.init = function () {
     };
 
     lemurro.users._initRoles();
+    users.init();
 };
