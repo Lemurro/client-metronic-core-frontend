@@ -1,7 +1,7 @@
 /**
  * Инициализация ядра
  *
- * @version 29.11.2018
+ * @version 12.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.init = function () {
@@ -42,6 +42,9 @@ lemurro.init = function () {
 
     // Инициализируем форму входа
     lemurro._initAuthForm();
+
+    // Подключим Template7 хелперы
+    lemurro._t7helperLocalTime();
 
     // Достанем из локального хранилища ИД сессии, если есть
     localforage.getItem('sessionID', function (err, value) {
