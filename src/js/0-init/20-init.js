@@ -44,6 +44,7 @@ lemurro.init = function () {
     lemurro._initAuthForm();
 
     // Подключим Template7 хелперы
+    lemurro._t7helperDecimal();
     lemurro._t7helperLocalTime();
 
     // Достанем из локального хранилища ИД сессии, если есть
