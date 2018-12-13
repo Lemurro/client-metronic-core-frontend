@@ -1,7 +1,7 @@
 /**
  * Инициализация ядра
  *
- * @version 12.12.2018
+ * @version 13.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.init = function () {
@@ -31,7 +31,8 @@ lemurro.init = function () {
         ajax         : {
             beforeSend: function (xhr, settings) {
                 if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
-                    xhr.setRequestHeader("X-SESSION-ID", lemurro.sessionID);
+                    xhr.setRequestHeader('X-SESSION-ID', lemurro.sessionID);
+                    xhr.setRequestHeader('X-UTC-OFFSET', moment().utcOffset());
                 }
             }
         }
