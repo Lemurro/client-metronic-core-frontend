@@ -5,6 +5,10 @@
   "homepage": "https://github.com/Lemurro/client-metronic-core-frontend",
   "author": "DimNS <dimns@dimns.ru>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lemurro/client-metronic-core-frontend.git"
+  },
   "devDependencies": {
     "del": "^3.0.0",
     "gulp": "^3.9.1",
