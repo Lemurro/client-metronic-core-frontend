@@ -27,6 +27,7 @@
     "localforage": "^1.7.3",
     "navigo": "^7.1.2",
     "select2": "^4.0.6-rc.1",
+    "simple-ajax-uploader": "^2.5.5",
     "template7": "^1.4.0"
   }
 }
