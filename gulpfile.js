@@ -86,6 +86,7 @@ gulp.task('concat.js', ['core.min.js'], function () {
         'node_modules/jquery-tablefilter/dist/jquery.tablefilter.js',
         'node_modules/localforage/dist/localforage.js',
         'node_modules/select2/dist/js/i18n/ru.js',
+        'node_modules/simple-ajax-uploader/SimpleAjaxUploader.js',
         'node_modules/template7/dist/template7.js',
         'dist/core.js'
     ];
@@ -103,6 +104,7 @@ gulp.task('concat.min.js', ['concat.js'], function () {
         'node_modules/jquery-tablefilter/dist/jquery.tablefilter.min.js',
         'node_modules/localforage/dist/localforage.min.js',
         'node_modules/select2/dist/js/i18n/ru.js',
+        'node_modules/simple-ajax-uploader/SimpleAjaxUploader.min.js',
         'node_modules/template7/dist/template7.min.js',
         'dist/core.min.js'
     ];
