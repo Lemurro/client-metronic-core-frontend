@@ -2,9 +2,9 @@
  * Подключение загрузчика файлов
  *
  * @param {jQuery}   btn      jQuery-объект указывающий на кнопку к которой привязать загрузчик
- * @param {function} callback Функция, вызываемя после успешной загрузки файла
+ * @param {function} callback Функция, вызываемая после успешной загрузки файла
  *
- * @version 08.01.2019
+ * @version 14.01.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.file.bindUpload = function (btn, callback) {
