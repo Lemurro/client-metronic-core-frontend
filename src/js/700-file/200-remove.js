@@ -1,12 +1,13 @@
 /**
  * Удаление файла
  *
- * @param {integer} fileid ИД файла
+ * @param {integer}  fileid   ИД файла
+ * @param {function} callback Функция, вызываемая после успешного удаления файла
  *
- * @version 08.01.2019
+ * @version 14.01.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-lemurro.file.remove = function (fileid) {
+lemurro.file.remove = function (fileid, callback) {
     var elemFile = $('.' + lemurro.file._classFile + '[data-file-id="' + fileid + '"]');
     var name     = elemFile.find('.js-name').text();
 
@@ -23,6 +24,10 @@ lemurro.file.remove = function (fileid) {
                 elemFile.remove();
             } else {
                 elemFile.attr('data-file-action', 'remove').hide();
+            }
+
+            if (!isEmpty(callback)) {
+                callback(fileid, name);
             }
         }
     });
