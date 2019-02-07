@@ -5,9 +5,9 @@
     /**
      * Javascript empty value checker
      *
-     * @param {null|undefined|number|string|object|array} value
+     * @param {null|undefined|number|string|object|array|function|boolean} value
      *
-     * @version 19.10.2018
+     * @version 07.02.2019
      * @author  DimNS <atomcms@ya.ru>
      */
     function isEmpty(value) {
@@ -32,6 +32,7 @@
                 return countKeys < 1;
 
             case 'function':
+            case 'boolean':
                 return false;
 
             default:
@@ -6423,6 +6424,59 @@ lemurro.auth.logout = function () {
     }, null);
 };
 /**
+ * Операции с табами
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+lemurro.tabs = {};
+/**
+ * Покажем указанный таб
+ *
+ * @param {string} tabID Идентификатор нужного таба
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.tabs.showTab = function (tabID) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    tabsLinks.find('.nav-link').removeClass('active show');
+    tabsContents.find('.tab-pane').removeClass('active show');
+
+    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
+    tabsContents.find('#' + tabID).addClass('active show');
+};
+/**
+ * Скрыть\Показать вторую вкладку
+ *
+ * @param {string} action Действие (show|hide)
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.tabs.tabInsertEdit = function (action) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    if (action === 'show') {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
+        tabsContents.find('#tab-form').addClass('active show');
+        lemurro.tabs.showTab('tab-form');
+    } else {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
+        tabsContents.find('#tab-form').removeClass('active show');
+        lemurro.tabs.showTab('tab-list');
+    }
+};
+/**
  * Хелперы
  *
  * @version 26.10.2018
@@ -6553,59 +6607,6 @@ lemurro.helper.showConfirm = function (title, content, confirmButtonText, cancel
             }
         }
     });
-};
-/**
- * Операции с табами
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-lemurro.tabs = {};
-/**
- * Покажем указанный таб
- *
- * @param {string} tabID Идентификатор нужного таба
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.tabs.showTab = function (tabID) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    tabsLinks.find('.nav-link').removeClass('active show');
-    tabsContents.find('.tab-pane').removeClass('active show');
-
-    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
-    tabsContents.find('#' + tabID).addClass('active show');
-};
-/**
- * Скрыть\Показать вторую вкладку
- *
- * @param {string} action Действие (show|hide)
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.tabs.tabInsertEdit = function (action) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    if (action === 'show') {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
-        tabsContents.find('#tab-form').addClass('active show');
-        lemurro.tabs.showTab('tab-form');
-    } else {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
-        tabsContents.find('#tab-form').removeClass('active show');
-        lemurro.tabs.showTab('tab-list');
-    }
 };
 /**
  * Операции со справочниками
@@ -6817,6 +6818,161 @@ lemurro.guide.showInsertForm = function (callback) {
     lemurro.tabs.tabInsertEdit('show');
 
     callback();
+};
+/**
+ * Работа с файлами
+ *
+ * @version 08.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+lemurro.file = {};
+
+/**
+ * Инициализация
+ *
+ * @param {string} classFile Селектор элемента файлов
+ *
+ * @version 08.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file.init = function (classFile) {
+    lemurro.file._config();
+
+    /**
+     * Селектор элемента файлов
+     *
+     * @type {string}
+     */
+    if (isEmpty(classFile)) {
+        lemurro.file._classFile = 'js-files__file';
+    } else {
+        lemurro.file._classFile = classFile;
+    }
+};
+/**
+ * Настройка плагина simple-ajax-uploader
+ *
+ * @version 08.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file._config = function () {
+    ss.uploadSetup({
+        name          : 'uploadfile',
+        multiple      : true,
+        multipleSelect: true,
+        multipart     : true,
+        hoverClass    : 'hover',
+        focusClass    : 'focus',
+        responseType  : 'json',
+        customHeaders : {
+            'X-SESSION-ID': lemurro.sessionID
+        }
+    });
+};
+/**
+ * Подключение загрузчика файлов
+ *
+ * @param {jQuery}   btn      jQuery-объект указывающий на кнопку к которой привязать загрузчик
+ * @param {function} callback Функция, вызываемая после успешной загрузки файла
+ *
+ * @version 14.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file.bindUpload = function (btn, callback) {
+    var btnContent = btn.html();
+
+    new ss.SimpleUpload({
+        button    : btn,
+        url       : pathServerAPI + 'file/upload',
+        onSubmit  : function () {
+            btn.html('<i class="fas fa-spinner fa-pulse"></i> Загрузка...').prop('disabled', true); // change button text to "Uploading..."
+        },
+        onComplete: function (filename, result) {
+            btn.html(btnContent).prop('disabled', false);
+
+            if (!result) {
+                swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
+
+                return false;
+            }
+
+            if (result.hasOwnProperty('errors')) {
+                lemurro.showErrors(result.errors);
+            } else {
+                if (!isEmpty(callback)) {
+                    callback(result.data.id, 'add', filename);
+                }
+
+                swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
+            }
+        },
+        onError   : function (filename) {
+            btn.html(btnContent).prop('disabled', false);
+
+            swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
+        }
+    });
+};
+/**
+ * Скачивание файла
+ *
+ * @param {integer} fileid ИД файла
+ *
+ * @version 08.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file.download = function (fileid) {
+    lemurro.lightajax.post(true, pathServerAPI + 'file/download/prepare', {
+        fileid: fileid
+    }, function (result) {
+        lemurro.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            lemurro.showErrors(result.errors);
+        } else {
+            window.open(pathServerAPI + 'file/download/run?token=' + encodeURI(result.data.token), 'Download file');
+        }
+    });
+};
+/**
+ * Удаление файла
+ *
+ * @param {integer}  fileid   ИД файла
+ * @param {function} callback Функция, вызываемая после успешного удаления файла
+ *
+ * @version 14.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file.remove = function (fileid, callback) {
+    var elemFile = $('.' + lemurro.file._classFile + '[data-file-id="' + fileid + '"]');
+    var name     = elemFile.find('.js-name').text();
+
+    swal({
+        title            : 'Удаление файла',
+        html             : 'Вы хотите удалить файл "' + name + '"?',
+        type             : 'warning',
+        showCancelButton : true,
+        confirmButtonText: 'Да, удалить!',
+        cancelButtonText : 'Отмена'
+    }).then(function (result) {
+        if (result.value) {
+            if (elemFile.attr('data-file-action') === 'add') {
+                elemFile.remove();
+            } else {
+                elemFile.attr('data-file-action', 'remove').hide();
+            }
+
+            if (!isEmpty(callback)) {
+                callback(fileid, name);
+            }
+        }
+    });
 };
 /**
  * Работа с пользователями
@@ -7063,159 +7219,4 @@ lemurro.users.showInsertForm = function (callback) {
     lemurro.tabs.tabInsertEdit('show');
 
     callback();
-};
-/**
- * Работа с файлами
- *
- * @version 08.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-lemurro.file = {};
-
-/**
- * Инициализация
- *
- * @param {string} classFile Селектор элемента файлов
- *
- * @version 08.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file.init = function (classFile) {
-    lemurro.file._config();
-
-    /**
-     * Селектор элемента файлов
-     *
-     * @type {string}
-     */
-    if (isEmpty(classFile)) {
-        lemurro.file._classFile = 'js-files__file';
-    } else {
-        lemurro.file._classFile = classFile;
-    }
-};
-/**
- * Настройка плагина simple-ajax-uploader
- *
- * @version 08.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file._config = function () {
-    ss.uploadSetup({
-        name          : 'uploadfile',
-        multiple      : true,
-        multipleSelect: true,
-        multipart     : true,
-        hoverClass    : 'hover',
-        focusClass    : 'focus',
-        responseType  : 'json',
-        customHeaders : {
-            'X-SESSION-ID': lemurro.sessionID
-        }
-    });
-};
-/**
- * Подключение загрузчика файлов
- *
- * @param {jQuery}   btn      jQuery-объект указывающий на кнопку к которой привязать загрузчик
- * @param {function} callback Функция, вызываемая после успешной загрузки файла
- *
- * @version 14.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file.bindUpload = function (btn, callback) {
-    var btnContent = btn.html();
-
-    new ss.SimpleUpload({
-        button    : btn,
-        url       : pathServerAPI + 'file/upload',
-        onSubmit  : function () {
-            btn.html('<i class="fas fa-spinner fa-pulse"></i> Загрузка...').prop('disabled', true); // change button text to "Uploading..."
-        },
-        onComplete: function (filename, result) {
-            btn.html(btnContent).prop('disabled', false);
-
-            if (!result) {
-                swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
-
-                return false;
-            }
-
-            if (result.hasOwnProperty('errors')) {
-                lemurro.showErrors(result.errors);
-            } else {
-                if (!isEmpty(callback)) {
-                    callback(result.data.id, 'add', filename);
-                }
-
-                swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
-            }
-        },
-        onError   : function (filename) {
-            btn.html(btnContent).prop('disabled', false);
-
-            swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
-        }
-    });
-};
-/**
- * Скачивание файла
- *
- * @param {integer} fileid ИД файла
- *
- * @version 08.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file.download = function (fileid) {
-    lemurro.lightajax.post(true, pathServerAPI + 'file/download/prepare', {
-        fileid: fileid
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
-
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            window.open(pathServerAPI + 'file/download/run?token=' + encodeURI(result.data.token), 'Download file');
-        }
-    });
-};
-/**
- * Удаление файла
- *
- * @param {integer}  fileid   ИД файла
- * @param {function} callback Функция, вызываемая после успешного удаления файла
- *
- * @version 14.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file.remove = function (fileid, callback) {
-    var elemFile = $('.' + lemurro.file._classFile + '[data-file-id="' + fileid + '"]');
-    var name     = elemFile.find('.js-name').text();
-
-    swal({
-        title            : 'Удаление файла',
-        html             : 'Вы хотите удалить файл "' + name + '"?',
-        type             : 'warning',
-        showCancelButton : true,
-        confirmButtonText: 'Да, удалить!',
-        cancelButtonText : 'Отмена'
-    }).then(function (result) {
-        if (result.value) {
-            if (elemFile.attr('data-file-action') === 'add') {
-                elemFile.remove();
-            } else {
-                elemFile.attr('data-file-action', 'remove').hide();
-            }
-
-            if (!isEmpty(callback)) {
-                callback(fileid, name);
-            }
-        }
-    });
 };
