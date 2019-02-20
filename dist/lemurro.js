@@ -7048,6 +7048,176 @@ lemurro.auth.logout = function () {
     }, null);
 };
 /**
+ * Хелперы
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+lemurro.helper = {};
+/**
+ * Очистка формы
+ *
+ * @param {object} container jQuery-объект контейнера
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.helper.clearFields = function (container) {
+    container.find('input[type="text"],input[type="password"],input[type="email"],input[type="number"],input[type="tel"],input[type="url"],input[type="date"],input[type="time"]')
+        .val('');
+
+    container.find('textarea').val('');
+
+    container.find('select').each(function () {
+        $(this).val(null).trigger('change');
+    });
+
+    container.find('input[type="checkbox"]').each(function () {
+        $(this).prop('checked', false);
+    });
+
+    container.find('input[type="radio"]').each(function () {
+        $(this).prop('checked', false);
+    });
+};
+/**
+ * Преобразование строки в дробное число
+ *
+ * @param {string|float} value     Строка с дробным числом или число
+ * @param {integer}      precision Точность результата (по умолчанию: 2)
+ *
+ * @return {float}
+ *
+ * @version 07.12.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.helper.decimal = function (value, precision) {
+    if (value === undefined) {
+        return 0;
+    }
+
+    if (precision === undefined || typeof precision !== 'number') {
+        precision = 2;
+    }
+
+    if (typeof value === 'number') {
+        return parseFloat(value.toFixed(precision));
+    } else {
+        value = value.replace(/ /g, '');
+        value = value.replace(/,/g, '.');
+
+        value = parseFloat(value);
+
+        if (isNaN(value)) {
+            return 0;
+        }
+
+        return parseFloat(value.toFixed(precision));
+    }
+};
+/**
+ * Проверка пользователя на наличие прав
+ *
+ * @param {string}   page            Раздел
+ * @param {string}   access          Право доступа
+ * @param {function} callbackSuccess Функция вызова при успешном получении данных
+ * @param {function} callbackFail    Функция вызова при провале
+ *
+ * @version 31.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
+    var _timer = setInterval(function () {
+        if (lemurro.hasOwnProperty('userinfo')) {
+            clearInterval(_timer);
+
+            if (lemurro.userinfo.admin) {
+                if (!isEmpty(callbackSuccess)) {
+                    callbackSuccess();
+                }
+            } else {
+                var fail = true;
+
+                if (lemurro.userinfo.roles.hasOwnProperty(page)) {
+                    var i;
+
+                    for (i in lemurro.userinfo.roles[page]) {
+                        if (lemurro.userinfo.roles[page][i] === access) {
+                            fail = false;
+
+                            if (!isEmpty(callbackSuccess)) {
+                                callbackSuccess();
+                            }
+                        }
+                    }
+                }
+
+                if (fail && !isEmpty(callbackFail)) {
+                    callbackFail();
+                }
+            }
+        }
+    }, 500);
+};
+/**
+ * Преобразование серверного времени в локальное и возврат строки указанного формата
+ *
+ * @param {string} datetime Дата и время в формате "ГГГГ-ММ-ДД ЧЧ:ММ:СС"
+ * @param {string} format   Возвращаемый формат (Moment.js)
+ *
+ * @version 13.12.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.helper.localTime = function (datetime, format) {
+    if (isEmpty(datetime) || isEmpty(format)) {
+        return datetime;
+    } else {
+        return moment.utc(datetime).local().format(format);
+    }
+};
+/**
+ * Покажем подтверждение
+ *
+ * @param {string}   title              Заголовок
+ * @param {string}   content            HTML-Содержимое
+ * @param {string}   confirmButtonText  Текст кнопки "OK"
+ * @param {string}   cancelButtonText   Текст кнопки "Cancel"
+ * @param {function} callbackOpen       Функция при открытии формы
+ * @param {function} callbackPreConfirm Функция перед вызовом callbackConfirm
+ * @param {function} callbackConfirm    Функция при нажатии confirmButton
+ * @param {function} callbackCancel     Функция при нажатии cancelButton
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.helper.showConfirm = function (title, content, confirmButtonText, cancelButtonText, callbackOpen, callbackPreConfirm, callbackConfirm, callbackCancel) {
+    swal({
+        title            : title,
+        html             : content,
+        type             : '',
+        allowOutsideClick: false,
+        showCancelButton : true,
+        confirmButtonText: confirmButtonText,
+        cancelButtonText : cancelButtonText,
+        onOpen           : callbackOpen,
+        preConfirm       : callbackPreConfirm
+    }).then(function (result) {
+        if (result.value) {
+            callbackConfirm();
+        } else {
+            if (callbackCancel !== null) {
+                callbackCancel();
+            }
+        }
+    });
+};
+/**
  * Операции со справочниками
  *
  * @version 06.12.2018
@@ -7305,176 +7475,6 @@ lemurro.guide.showInsertForm = function (callback) {
     callback();
 };
 /**
- * Хелперы
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-lemurro.helper = {};
-/**
- * Очистка формы
- *
- * @param {object} container jQuery-объект контейнера
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.helper.clearFields = function (container) {
-    container.find('input[type="text"],input[type="password"],input[type="email"],input[type="number"],input[type="tel"],input[type="url"],input[type="date"],input[type="time"]')
-        .val('');
-
-    container.find('textarea').val('');
-
-    container.find('select').each(function () {
-        $(this).val(null).trigger('change');
-    });
-
-    container.find('input[type="checkbox"]').each(function () {
-        $(this).prop('checked', false);
-    });
-
-    container.find('input[type="radio"]').each(function () {
-        $(this).prop('checked', false);
-    });
-};
-/**
- * Преобразование строки в дробное число
- *
- * @param {string|float} value     Строка с дробным числом или число
- * @param {integer}      precision Точность результата (по умолчанию: 2)
- *
- * @return {float}
- *
- * @version 07.12.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.helper.decimal = function (value, precision) {
-    if (value === undefined) {
-        return 0;
-    }
-
-    if (precision === undefined || typeof precision !== 'number') {
-        precision = 2;
-    }
-
-    if (typeof value === 'number') {
-        return parseFloat(value.toFixed(precision));
-    } else {
-        value = value.replace(/ /g, '');
-        value = value.replace(/,/g, '.');
-
-        value = parseFloat(value);
-
-        if (isNaN(value)) {
-            return 0;
-        }
-
-        return parseFloat(value.toFixed(precision));
-    }
-};
-/**
- * Проверка пользователя на наличие прав
- *
- * @param {string}   page            Раздел
- * @param {string}   access          Право доступа
- * @param {function} callbackSuccess Функция вызова при успешном получении данных
- * @param {function} callbackFail    Функция вызова при провале
- *
- * @version 31.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
-    var _timer = setInterval(function () {
-        if (lemurro.hasOwnProperty('userinfo')) {
-            clearInterval(_timer);
-
-            if (lemurro.userinfo.admin) {
-                if (!isEmpty(callbackSuccess)) {
-                    callbackSuccess();
-                }
-            } else {
-                var fail = true;
-
-                if (lemurro.userinfo.roles.hasOwnProperty(page)) {
-                    var i;
-
-                    for (i in lemurro.userinfo.roles[page]) {
-                        if (lemurro.userinfo.roles[page][i] === access) {
-                            fail = false;
-
-                            if (!isEmpty(callbackSuccess)) {
-                                callbackSuccess();
-                            }
-                        }
-                    }
-                }
-
-                if (fail && !isEmpty(callbackFail)) {
-                    callbackFail();
-                }
-            }
-        }
-    }, 500);
-};
-/**
- * Преобразование серверного времени в локальное и возврат строки указанного формата
- *
- * @param {string} datetime Дата и время в формате "ГГГГ-ММ-ДД ЧЧ:ММ:СС"
- * @param {string} format   Возвращаемый формат (Moment.js)
- *
- * @version 13.12.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.helper.localTime = function (datetime, format) {
-    if (isEmpty(datetime) || isEmpty(format)) {
-        return datetime;
-    } else {
-        return moment.utc(datetime).local().format(format);
-    }
-};
-/**
- * Покажем подтверждение
- *
- * @param {string}   title              Заголовок
- * @param {string}   content            HTML-Содержимое
- * @param {string}   confirmButtonText  Текст кнопки "OK"
- * @param {string}   cancelButtonText   Текст кнопки "Cancel"
- * @param {function} callbackOpen       Функция при открытии формы
- * @param {function} callbackPreConfirm Функция перед вызовом callbackConfirm
- * @param {function} callbackConfirm    Функция при нажатии confirmButton
- * @param {function} callbackCancel     Функция при нажатии cancelButton
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.helper.showConfirm = function (title, content, confirmButtonText, cancelButtonText, callbackOpen, callbackPreConfirm, callbackConfirm, callbackCancel) {
-    swal({
-        title            : title,
-        html             : content,
-        type             : '',
-        allowOutsideClick: false,
-        showCancelButton : true,
-        confirmButtonText: confirmButtonText,
-        cancelButtonText : cancelButtonText,
-        onOpen           : callbackOpen,
-        preConfirm       : callbackPreConfirm
-    }).then(function (result) {
-        if (result.value) {
-            callbackConfirm();
-        } else {
-            if (callbackCancel !== null) {
-                callbackCancel();
-            }
-        }
-    });
-};
-/**
  * Операции с табами
  *
  * @version 26.10.2018
@@ -7526,162 +7526,6 @@ lemurro.tabs.tabInsertEdit = function (action) {
         tabsContents.find('#tab-form').removeClass('active show');
         lemurro.tabs.showTab('tab-list');
     }
-};
-/**
- * Работа с файлами
- *
- * @version 08.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-lemurro.file = {};
-
-/**
- * Инициализация
- *
- * @param {string} classFile Селектор элемента файлов
- *
- * @version 08.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file.init = function (classFile) {
-    lemurro.file._config();
-
-    /**
-     * Селектор элемента файлов
-     *
-     * @type {string}
-     */
-    if (isEmpty(classFile)) {
-        lemurro.file._classFile = 'js-files__file';
-    } else {
-        lemurro.file._classFile = classFile;
-    }
-};
-/**
- * Настройка плагина simple-ajax-uploader
- *
- * @version 10.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file._config = function () {
-    ss.uploadSetup({
-        name          : 'uploadfile',
-        multiple      : true,
-        multipleSelect: true,
-        multipart     : true,
-        hoverClass    : 'hover',
-        focusClass    : 'focus',
-        responseType  : 'json',
-        customHeaders : {
-            'X-SESSION-ID': lemurro.sessionID,
-            'X-UTC-OFFSET': moment().utcOffset()
-        }
-    });
-};
-/**
- * Подключение загрузчика файлов
- *
- * @param {jQuery}   btn      jQuery-объект указывающий на кнопку к которой привязать загрузчик
- * @param {function} callback Функция, вызываемая после успешной загрузки файла
- *
- * @version 08.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file.bindUpload = function (btn, callback) {
-    var btnContent = btn.html();
-
-    new ss.SimpleUpload({
-        button    : btn,
-        url       : app.config.apiUrl + 'file/upload',
-        onSubmit  : function () {
-            btn.html('<i class="fas fa-spinner fa-pulse"></i> Загрузка...').prop('disabled', true); // change button text to "Uploading..."
-        },
-        onComplete: function (filename, result) {
-            btn.html(btnContent).prop('disabled', false);
-
-            if (!result) {
-                swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
-
-                return false;
-            }
-
-            if (result.hasOwnProperty('errors')) {
-                lemurro.showErrors(result.errors);
-            } else {
-                if (!isEmpty(callback)) {
-                    callback(result.data.id, 'add', filename);
-                }
-
-                swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
-            }
-        },
-        onError   : function (filename) {
-            btn.html(btnContent).prop('disabled', false);
-
-            swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
-        }
-    });
-};
-/**
- * Скачивание файла
- *
- * @param {integer} fileid ИД файла
- *
- * @version 08.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file.download = function (fileid) {
-    lemurro.lightajax.post(true, app.config.apiUrl + 'file/download/prepare', {
-        fileid: fileid
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
-
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            window.open(app.config.apiUrl + 'file/download/run?token=' + encodeURI(result.data.token), 'Download file');
-        }
-    });
-};
-/**
- * Удаление файла
- *
- * @param {integer}  fileid   ИД файла
- * @param {function} callback Функция, вызываемая после успешного удаления файла
- *
- * @version 14.01.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.file.remove = function (fileid, callback) {
-    var elemFile = $('.' + lemurro.file._classFile + '[data-file-id="' + fileid + '"]');
-    var name     = elemFile.find('.js-name').text();
-
-    swal({
-        title            : 'Удаление файла',
-        html             : 'Вы хотите удалить файл "' + name + '"?',
-        type             : 'warning',
-        showCancelButton : true,
-        confirmButtonText: 'Да, удалить!',
-        cancelButtonText : 'Отмена'
-    }).then(function (result) {
-        if (result.value) {
-            if (elemFile.attr('data-file-action') === 'add') {
-                elemFile.remove();
-            } else {
-                elemFile.attr('data-file-action', 'remove').hide();
-            }
-
-            if (!isEmpty(callback)) {
-                callback(fileid, name);
-            }
-        }
-    });
 };
 /**
  * Работа с пользователями
@@ -8036,4 +7880,160 @@ lemurro.users.showInsertForm = function (callback) {
     lemurro.tabs.tabInsertEdit('show');
 
     callback();
+};
+/**
+ * Работа с файлами
+ *
+ * @version 08.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+lemurro.file = {};
+
+/**
+ * Инициализация
+ *
+ * @param {string} classFile Селектор элемента файлов
+ *
+ * @version 08.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file.init = function (classFile) {
+    lemurro.file._config();
+
+    /**
+     * Селектор элемента файлов
+     *
+     * @type {string}
+     */
+    if (isEmpty(classFile)) {
+        lemurro.file._classFile = 'js-files__file';
+    } else {
+        lemurro.file._classFile = classFile;
+    }
+};
+/**
+ * Настройка плагина simple-ajax-uploader
+ *
+ * @version 10.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file._config = function () {
+    ss.uploadSetup({
+        name          : 'uploadfile',
+        multiple      : true,
+        multipleSelect: true,
+        multipart     : true,
+        hoverClass    : 'hover',
+        focusClass    : 'focus',
+        responseType  : 'json',
+        customHeaders : {
+            'X-SESSION-ID': lemurro.sessionID,
+            'X-UTC-OFFSET': moment().utcOffset()
+        }
+    });
+};
+/**
+ * Подключение загрузчика файлов
+ *
+ * @param {jQuery}   btn      jQuery-объект указывающий на кнопку к которой привязать загрузчик
+ * @param {function} callback Функция, вызываемая после успешной загрузки файла
+ *
+ * @version 08.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file.bindUpload = function (btn, callback) {
+    var btnContent = btn.html();
+
+    new ss.SimpleUpload({
+        button    : btn,
+        url       : app.config.apiUrl + 'file/upload',
+        onSubmit  : function () {
+            btn.html('<i class="fas fa-spinner fa-pulse"></i> Загрузка...').prop('disabled', true); // change button text to "Uploading..."
+        },
+        onComplete: function (filename, result) {
+            btn.html(btnContent).prop('disabled', false);
+
+            if (!result) {
+                swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
+
+                return false;
+            }
+
+            if (result.hasOwnProperty('errors')) {
+                lemurro.showErrors(result.errors);
+            } else {
+                if (!isEmpty(callback)) {
+                    callback(result.data.id, 'add', filename);
+                }
+
+                swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
+            }
+        },
+        onError   : function (filename) {
+            btn.html(btnContent).prop('disabled', false);
+
+            swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
+        }
+    });
+};
+/**
+ * Скачивание файла
+ *
+ * @param {integer} fileid ИД файла
+ *
+ * @version 08.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file.download = function (fileid) {
+    lemurro.lightajax.post(true, app.config.apiUrl + 'file/download/prepare', {
+        fileid: fileid
+    }, function (result) {
+        lemurro.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            lemurro.showErrors(result.errors);
+        } else {
+            window.open(app.config.apiUrl + 'file/download/run?token=' + encodeURI(result.data.token), 'Download file');
+        }
+    });
+};
+/**
+ * Удаление файла
+ *
+ * @param {integer}  fileid   ИД файла
+ * @param {function} callback Функция, вызываемая после успешного удаления файла
+ *
+ * @version 14.01.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.file.remove = function (fileid, callback) {
+    var elemFile = $('.' + lemurro.file._classFile + '[data-file-id="' + fileid + '"]');
+    var name     = elemFile.find('.js-name').text();
+
+    swal({
+        title            : 'Удаление файла',
+        html             : 'Вы хотите удалить файл "' + name + '"?',
+        type             : 'warning',
+        showCancelButton : true,
+        confirmButtonText: 'Да, удалить!',
+        cancelButtonText : 'Отмена'
+    }).then(function (result) {
+        if (result.value) {
+            if (elemFile.attr('data-file-action') === 'add') {
+                elemFile.remove();
+            } else {
+                elemFile.attr('data-file-action', 'remove').hide();
+            }
+
+            if (!isEmpty(callback)) {
+                callback(fileid, name);
+            }
+        }
+    });
 };
