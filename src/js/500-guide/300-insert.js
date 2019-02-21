@@ -4,11 +4,11 @@
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 06.12.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.insert = function (data, callback) {
-    lemurro.lightajax.post(true, app.config.apiUrl + 'guide/' + lemurro.guide._name, {
+    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name, {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');

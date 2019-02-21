@@ -4,11 +4,11 @@
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.save = function (data, callback) {
-    lemurro.lightajax.post(true, app.config.apiUrl + 'users/' + data.id, {
+    lemurro.lightajax.post(true, pathServerAPI + 'users/' + data.id, {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');

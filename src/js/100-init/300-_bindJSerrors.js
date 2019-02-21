@@ -1,7 +1,7 @@
 /**
  * Событие отправки javascript-ошибки при возникновении
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro._bindJSerrors = function () {
@@ -31,7 +31,7 @@ lemurro._bindJSerrors = function () {
             msg       = msg.message;
         }
 
-        new Image().src = app.config.apiUrl + 'jserrors?msg=' + encodeURIComponent(msg) + '&file=' + encodeURIComponent(file) + '&line=' + encodeURIComponent(line) + '&col=' + encodeURIComponent(col) + '&err=' + encodeURIComponent(errString);
+        new Image().src = pathServerAPI + 'jserrors?msg=' + encodeURIComponent(msg) + '&file=' + encodeURIComponent(file) + '&line=' + encodeURIComponent(line) + '&col=' + encodeURIComponent(col) + '&err=' + encodeURIComponent(errString);
     }
 
     if (window.addEventListener) {

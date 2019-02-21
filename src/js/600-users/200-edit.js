@@ -4,11 +4,11 @@
  * @param {integer}  id       ИД пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.edit = function (id, callback) {
-    lemurro.lightajax.get(true, app.config.apiUrl + 'users/' + id, {}, function (result) {
+    lemurro.lightajax.get(true, pathServerAPI + 'users/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {

@@ -1,11 +1,11 @@
 /**
  * Список пользователей
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.getData = function () {
-    lemurro.lightajax.get(true, app.config.apiUrl + 'users', {}, function (result) {
+    lemurro.lightajax.get(true, pathServerAPI + 'users', {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
