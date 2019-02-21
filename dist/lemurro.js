@@ -6594,7 +6594,7 @@ lemurro._bindInputmask = function () {
 /**
  * Событие отправки javascript-ошибки при возникновении
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro._bindJSerrors = function () {
@@ -6624,7 +6624,7 @@ lemurro._bindJSerrors = function () {
             msg       = msg.message;
         }
 
-        new Image().src = app.config.apiUrl + 'jserrors?msg=' + encodeURIComponent(msg) + '&file=' + encodeURIComponent(file) + '&line=' + encodeURIComponent(line) + '&col=' + encodeURIComponent(col) + '&err=' + encodeURIComponent(errString);
+        new Image().src = pathServerAPI + 'jserrors?msg=' + encodeURIComponent(msg) + '&file=' + encodeURIComponent(file) + '&line=' + encodeURIComponent(line) + '&col=' + encodeURIComponent(col) + '&err=' + encodeURIComponent(errString);
     }
 
     if (window.addEventListener) {
@@ -6865,11 +6865,11 @@ lemurro.auth._timerID = null;
 /**
  * Получим информацию о пользователе
  *
- * @version 29.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth._getUser = function () {
-    lemurro.lightajax.get(false, app.config.apiUrl + 'user', {}, function (result) {
+    lemurro.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
         if (result.hasOwnProperty('errors')) {
             lemurro.lightajax.preloader('hide');
 
@@ -6952,11 +6952,11 @@ lemurro.auth._success = function () {
 /**
  * Проверка сессии
  *
- * @version 29.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.check = function () {
-    lemurro.lightajax.get(true, app.config.apiUrl + 'auth/check', {}, function (result) {
+    lemurro.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
         if (result.hasOwnProperty('errors')) {
             lemurro.lightajax.preloader('hide');
 
@@ -6969,13 +6969,13 @@ lemurro.auth.check = function () {
 /**
  * Проверка введенного кода
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.checkCode = function () {
     var browser = bowser.getParser(window.navigator.userAgent);
 
-    lemurro.lightajax.post(true, app.config.apiUrl + 'auth/code', {
+    lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
         'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
         'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
         'device_info': {
@@ -7004,11 +7004,11 @@ lemurro.auth.checkCode = function () {
 /**
  * Получение кода
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth.getCode = function () {
-    lemurro.lightajax.get(true, app.config.apiUrl + 'auth/code', {
+    lemurro.lightajax.get(true, pathServerAPI + 'auth/code', {
         'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -7046,6 +7046,59 @@ lemurro.auth.logout = function () {
         lemurro.sessionID = '';
         lemurro.authScreen('show');
     }, null);
+};
+/**
+ * Операции с табами
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+lemurro.tabs = {};
+/**
+ * Покажем указанный таб
+ *
+ * @param {string} tabID Идентификатор нужного таба
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.tabs.showTab = function (tabID) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    tabsLinks.find('.nav-link').removeClass('active show');
+    tabsContents.find('.tab-pane').removeClass('active show');
+
+    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
+    tabsContents.find('#' + tabID).addClass('active show');
+};
+/**
+ * Скрыть\Показать вторую вкладку
+ *
+ * @param {string} action Действие (show|hide)
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.tabs.tabInsertEdit = function (action) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    if (action === 'show') {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
+        tabsContents.find('#tab-form').addClass('active show');
+        lemurro.tabs.showTab('tab-form');
+    } else {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
+        tabsContents.find('#tab-form').removeClass('active show');
+        lemurro.tabs.showTab('tab-list');
+    }
 };
 /**
  * Хелперы
@@ -7267,11 +7320,11 @@ lemurro.guide.init = function (pageName, jsClass) {
 /**
  * Список элементов справочника
  *
- * @version 06.12.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide._getData = function () {
-    lemurro.lightajax.get(true, app.config.apiUrl + 'guide/' + lemurro.guide._name, {}, function (result) {
+    lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -7346,11 +7399,11 @@ lemurro.guide._load = function () {
  * @param {integer}  id       ИД записи
  * @param {function} callback Функция обратного вызова
  *
- * @version 06.12.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.edit = function (id, callback) {
-    lemurro.lightajax.get(true, app.config.apiUrl + 'guide/' + lemurro.guide._name + '/' + id, {}, function (result) {
+    lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -7378,11 +7431,11 @@ lemurro.guide.edit = function (id, callback) {
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 06.12.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.insert = function (data, callback) {
-    lemurro.lightajax.post(true, app.config.apiUrl + 'guide/' + lemurro.guide._name, {
+    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name, {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -7401,7 +7454,7 @@ lemurro.guide.insert = function (data, callback) {
  * @param {string}   name     Имя записи
  * @param {function} callback Функция обратного вызова
  *
- * @version 06.12.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.remove = function (id, name, callback) {
@@ -7414,7 +7467,7 @@ lemurro.guide.remove = function (id, name, callback) {
         cancelButtonText : 'Отмена'
     }).then(function (result) {
         if (result.value) {
-            lemurro.lightajax.post(true, app.config.apiUrl + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (result) {
+            lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (result) {
                 lemurro.lightajax.preloader('hide');
 
                 if (result.hasOwnProperty('errors')) {
@@ -7434,11 +7487,11 @@ lemurro.guide.remove = function (id, name, callback) {
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 06.12.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide.save = function (data, callback) {
-    lemurro.lightajax.post(true, app.config.apiUrl + 'guide/' + lemurro.guide._name + '/' + data.id, {
+    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + data.id, {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -7473,59 +7526,6 @@ lemurro.guide.showInsertForm = function (callback) {
     lemurro.tabs.tabInsertEdit('show');
 
     callback();
-};
-/**
- * Операции с табами
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-lemurro.tabs = {};
-/**
- * Покажем указанный таб
- *
- * @param {string} tabID Идентификатор нужного таба
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.tabs.showTab = function (tabID) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    tabsLinks.find('.nav-link').removeClass('active show');
-    tabsContents.find('.tab-pane').removeClass('active show');
-
-    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
-    tabsContents.find('#' + tabID).addClass('active show');
-};
-/**
- * Скрыть\Показать вторую вкладку
- *
- * @param {string} action Действие (show|hide)
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.tabs.tabInsertEdit = function (action) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    if (action === 'show') {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
-        tabsContents.find('#tab-form').addClass('active show');
-        lemurro.tabs.showTab('tab-form');
-    } else {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
-        tabsContents.find('#tab-form').removeClass('active show');
-        lemurro.tabs.showTab('tab-list');
-    }
 };
 /**
  * Работа с пользователями
@@ -7598,11 +7598,11 @@ lemurro.users._initRoles = function () {
  * @param {integer}  id       ИД пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.edit = function (id, callback) {
-    lemurro.lightajax.get(true, app.config.apiUrl + 'users/' + id, {}, function (result) {
+    lemurro.lightajax.get(true, pathServerAPI + 'users/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -7627,11 +7627,11 @@ lemurro.users.edit = function (id, callback) {
 /**
  * Список пользователей
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.getData = function () {
-    lemurro.lightajax.get(true, app.config.apiUrl + 'users', {}, function (result) {
+    lemurro.lightajax.get(true, pathServerAPI + 'users', {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
         if (result.hasOwnProperty('errors')) {
@@ -7693,11 +7693,11 @@ lemurro.users.getRoles = function (form) {
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.insert = function (data, callback) {
-    lemurro.lightajax.post(true, app.config.apiUrl + 'users', {
+    lemurro.lightajax.post(true, pathServerAPI + 'users', {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -7714,7 +7714,7 @@ lemurro.users.insert = function (data, callback) {
  *
  * @param {integer} id ИД пользователя
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.loginByUser = function (id) {
@@ -7727,7 +7727,7 @@ lemurro.users.loginByUser = function (id) {
         cancelButtonText : 'Нет'
     }).then(function (result) {
         if (result.value) {
-            lemurro.lightajax.post(true, app.config.apiUrl + 'users/login_by_user', {
+            lemurro.lightajax.post(true, pathServerAPI + 'users/login_by_user', {
                 user_id: id
             }, function (result) {
                 lemurro.lightajax.preloader('hide');
@@ -7752,7 +7752,7 @@ lemurro.users.loginByUser = function (id) {
  * @param {string}   name     Имя пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.remove = function (id, name, callback) {
@@ -7765,7 +7765,7 @@ lemurro.users.remove = function (id, name, callback) {
         cancelButtonText : 'Отмена'
     }).then(function (result) {
         if (result.value) {
-            lemurro.lightajax.post(true, app.config.apiUrl + 'users/' + id + '/remove', {}, function (result) {
+            lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/remove', {}, function (result) {
                 lemurro.lightajax.preloader('hide');
 
                 if (result.hasOwnProperty('errors')) {
@@ -7819,11 +7819,11 @@ lemurro.users.return = function () {
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 15.11.2018
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.save = function (data, callback) {
-    lemurro.lightajax.post(true, app.config.apiUrl + 'users/' + data.id, {
+    lemurro.lightajax.post(true, pathServerAPI + 'users/' + data.id, {
         data: data
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -7944,7 +7944,7 @@ lemurro.file._config = function () {
  * @param {jQuery}   btn      jQuery-объект указывающий на кнопку к которой привязать загрузчик
  * @param {function} callback Функция, вызываемая после успешной загрузки файла
  *
- * @version 08.01.2019
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.file.bindUpload = function (btn, callback) {
@@ -7952,7 +7952,7 @@ lemurro.file.bindUpload = function (btn, callback) {
 
     new ss.SimpleUpload({
         button    : btn,
-        url       : app.config.apiUrl + 'file/upload',
+        url       : pathServerAPI + 'file/upload',
         onSubmit  : function () {
             btn.html('<i class="fas fa-spinner fa-pulse"></i> Загрузка...').prop('disabled', true); // change button text to "Uploading..."
         },
@@ -7987,11 +7987,11 @@ lemurro.file.bindUpload = function (btn, callback) {
  *
  * @param {integer} fileid ИД файла
  *
- * @version 08.01.2019
+ * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.file.download = function (fileid) {
-    lemurro.lightajax.post(true, app.config.apiUrl + 'file/download/prepare', {
+    lemurro.lightajax.post(true, pathServerAPI + 'file/download/prepare', {
         fileid: fileid
     }, function (result) {
         lemurro.lightajax.preloader('hide');
@@ -7999,7 +7999,7 @@ lemurro.file.download = function (fileid) {
         if (result.hasOwnProperty('errors')) {
             lemurro.showErrors(result.errors);
         } else {
-            window.open(app.config.apiUrl + 'file/download/run?token=' + encodeURI(result.data.token), 'Download file');
+            window.open(pathServerAPI + 'file/download/run?token=' + encodeURI(result.data.token), 'Download file');
         }
     });
 };
