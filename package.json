@@ -18,7 +18,7 @@
     "gulp-uglify": "^1.5.4"
   },
   "dependencies": {
-    "bowser": "~2.1.0",
+    "bowser": "~2.1.2",
     "dimns-is-empty-js": "~1.1.0",
     "jquery-lightajax": "~1.0.1",
     "jquery-tablefilter": "~1.1.0",
