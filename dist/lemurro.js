@@ -6471,213 +6471,6 @@ return ss;
 //# sourceMappingURL=template7.js.map
 
 /**
- * Проверка сессии при запуске приложения
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-lemurro.auth = {};
-
-/**
- * ИД таймера
- *
- * @type {int|null}
- *
- * @public
- */
-lemurro.auth._timerID = null;
-/**
- * Получим информацию о пользователе
- *
- * @version 21.02.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.auth._getUser = function () {
-    lemurro.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
-        if (result.hasOwnProperty('errors')) {
-            lemurro.lightajax.preloader('hide');
-
-            lemurro.showErrors(result.errors);
-        } else {
-            lemurro.lightajax.preloader('hide');
-
-            lemurro.userinfo = result.data;
-
-            lemurro.auth._success();
-        }
-    });
-};
-/**
- * Запуск таймера
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.auth._runTimer = function () {
-    if (lemurro.auth._timerID !== null) {
-        clearInterval(lemurro.auth._timerID);
-    }
-
-    lemurro.auth._timerID = setInterval(function () {
-        var formCode  = $('#js-auth__check-form');
-        var elemTimer = formCode.find('.js-timer__count');
-        var count     = parseInt(elemTimer.text(), 10);
-
-        if (count > 0) {
-            elemTimer.text(--count);
-        } else {
-            clearInterval(lemurro.auth._timerID);
-            formCode.find('.js-timer').hide();
-            formCode.find('.js-resend').show();
-        }
-    }, 1000);
-};
-/**
- * Проверка сессии и загрузка данных о пользователе прошли успешно
- *
- * @version 29.11.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.auth._success = function () {
-    var body = $('body');
-
-    // Установим идентификатор пользователя в верхнем меню
-    $('.js-user__auth-id').text(lemurro.userinfo.auth_id);
-
-    // Если пользователь админ, включим все возможности
-    if (lemurro.userinfo.admin) {
-        body.find('.js-role').removeClass('d-none');
-    } else {
-        for (var pageID in lemurro.userinfo.roles) {
-            if (lemurro.userinfo.roles.hasOwnProperty(pageID)) {
-                for (var i in lemurro.userinfo.roles[pageID]) {
-                    if (lemurro.userinfo.roles[pageID].hasOwnProperty(i)) {
-                        var access = lemurro.userinfo.roles[pageID][i];
-
-                        body.find('.js-role__' + pageID + '--' + access).removeClass('d-none');
-                    }
-                }
-            }
-        }
-    }
-
-    // Приложение успешно стартовало
-    app.started = true;
-
-    // Скрываем более ненужный оверлей прелоадера
-    $('#js-preloader-overlay').hide();
-
-    // Запустим инициализацию приложения
-    app.init();
-
-    // Загрузим страницу определённую маршрутизатором
-    lemurro._loadPage();
-};
-/**
- * Проверка сессии
- *
- * @version 21.02.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.auth.check = function () {
-    lemurro.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
-        if (result.hasOwnProperty('errors')) {
-            lemurro.lightajax.preloader('hide');
-
-            lemurro.showErrors(result.errors);
-        } else {
-            lemurro.auth._getUser();
-        }
-    });
-};
-/**
- * Проверка введенного кода
- *
- * @version 21.02.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.auth.checkCode = function () {
-    var browser = bowser.getParser(window.navigator.userAgent);
-
-    lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
-        'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
-        'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
-        'device_info': {
-            uuid        : 'WebApp',
-            platform    : browser.parsedResult.os.name,
-            version     : browser.parsedResult.os.version,
-            manufacturer: browser.parsedResult.browser.name,
-            model       : browser.parsedResult.browser.version
-        }
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
-
-        if (result.hasOwnProperty('errors')) {
-            $('#js-auth__check-form').find('input[name="auth_code"]').val('');
-
-            lemurro.showErrors(result.errors);
-        } else {
-            localforage.setItem('sessionID', result.data.session, function () {
-                lemurro.sessionID = result.data.session;
-                lemurro.authScreen('hide');
-                lemurro.auth.check();
-            });
-        }
-    });
-};
-/**
- * Получение кода
- *
- * @version 21.02.2019
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.auth.getCode = function () {
-    lemurro.lightajax.get(true, pathServerAPI + 'auth/code', {
-        'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
-
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            if (result.data.hasOwnProperty('message')) {
-                console.log(result.data.message, 'AuthCode');
-            }
-
-            var formCode = $('#js-auth__check-form');
-
-            formCode.find('.js-timer').show();
-            formCode.find('.js-timer__count').text('60');
-            formCode.find('.js-resend').hide();
-
-            lemurro.auth._runTimer();
-
-            $('#js-auth__get-form').hide();
-            formCode.show();
-        }
-    });
-};
-/**
- * Сброс сессии
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.auth.logout = function () {
-    lemurro.helper.showConfirm('Выход', 'Вы действительно хотите выйти из системы?', 'Да', 'Нет', null, null, function () {
-        $('.js-user-data').html('<i class="fas fa-spinner fa-pulse"></i>');
-        localforage.clear();
-        lemurro.sessionID = '';
-        lemurro.authScreen('show');
-    }, null);
-};
-/**
  * Загрузочный скрипт приложения
  *
  * @version 27.11.2018
@@ -7057,6 +6850,213 @@ lemurro._showError = function (errCode, errTitle) {
     swal(title, errTitle, code);
 };
 /**
+ * Проверка сессии при запуске приложения
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+lemurro.auth = {};
+
+/**
+ * ИД таймера
+ *
+ * @type {int|null}
+ *
+ * @public
+ */
+lemurro.auth._timerID = null;
+/**
+ * Получим информацию о пользователе
+ *
+ * @version 21.02.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth._getUser = function () {
+    lemurro.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
+        if (result.hasOwnProperty('errors')) {
+            lemurro.lightajax.preloader('hide');
+
+            lemurro.showErrors(result.errors);
+        } else {
+            lemurro.lightajax.preloader('hide');
+
+            lemurro.userinfo = result.data;
+
+            lemurro.auth._success();
+        }
+    });
+};
+/**
+ * Запуск таймера
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth._runTimer = function () {
+    if (lemurro.auth._timerID !== null) {
+        clearInterval(lemurro.auth._timerID);
+    }
+
+    lemurro.auth._timerID = setInterval(function () {
+        var formCode  = $('#js-auth__check-form');
+        var elemTimer = formCode.find('.js-timer__count');
+        var count     = parseInt(elemTimer.text(), 10);
+
+        if (count > 0) {
+            elemTimer.text(--count);
+        } else {
+            clearInterval(lemurro.auth._timerID);
+            formCode.find('.js-timer').hide();
+            formCode.find('.js-resend').show();
+        }
+    }, 1000);
+};
+/**
+ * Проверка сессии и загрузка данных о пользователе прошли успешно
+ *
+ * @version 29.11.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth._success = function () {
+    var body = $('body');
+
+    // Установим идентификатор пользователя в верхнем меню
+    $('.js-user__auth-id').text(lemurro.userinfo.auth_id);
+
+    // Если пользователь админ, включим все возможности
+    if (lemurro.userinfo.admin) {
+        body.find('.js-role').removeClass('d-none');
+    } else {
+        for (var pageID in lemurro.userinfo.roles) {
+            if (lemurro.userinfo.roles.hasOwnProperty(pageID)) {
+                for (var i in lemurro.userinfo.roles[pageID]) {
+                    if (lemurro.userinfo.roles[pageID].hasOwnProperty(i)) {
+                        var access = lemurro.userinfo.roles[pageID][i];
+
+                        body.find('.js-role__' + pageID + '--' + access).removeClass('d-none');
+                    }
+                }
+            }
+        }
+    }
+
+    // Приложение успешно стартовало
+    app.started = true;
+
+    // Скрываем более ненужный оверлей прелоадера
+    $('#js-preloader-overlay').hide();
+
+    // Запустим инициализацию приложения
+    app.init();
+
+    // Загрузим страницу определённую маршрутизатором
+    lemurro._loadPage();
+};
+/**
+ * Проверка сессии
+ *
+ * @version 21.02.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth.check = function () {
+    lemurro.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
+        if (result.hasOwnProperty('errors')) {
+            lemurro.lightajax.preloader('hide');
+
+            lemurro.showErrors(result.errors);
+        } else {
+            lemurro.auth._getUser();
+        }
+    });
+};
+/**
+ * Проверка введенного кода
+ *
+ * @version 21.02.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth.checkCode = function () {
+    var browser = bowser.getParser(window.navigator.userAgent);
+
+    lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
+        'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
+        'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
+        'device_info': {
+            uuid        : 'WebApp',
+            platform    : browser.parsedResult.os.name,
+            version     : browser.parsedResult.os.version,
+            manufacturer: browser.parsedResult.browser.name,
+            model       : browser.parsedResult.browser.version
+        }
+    }, function (result) {
+        lemurro.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            $('#js-auth__check-form').find('input[name="auth_code"]').val('');
+
+            lemurro.showErrors(result.errors);
+        } else {
+            localforage.setItem('sessionID', result.data.session, function () {
+                lemurro.sessionID = result.data.session;
+                lemurro.authScreen('hide');
+                lemurro.auth.check();
+            });
+        }
+    });
+};
+/**
+ * Получение кода
+ *
+ * @version 21.02.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth.getCode = function () {
+    lemurro.lightajax.get(true, pathServerAPI + 'auth/code', {
+        'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
+    }, function (result) {
+        lemurro.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            lemurro.showErrors(result.errors);
+        } else {
+            if (result.data.hasOwnProperty('message')) {
+                console.log(result.data.message, 'AuthCode');
+            }
+
+            var formCode = $('#js-auth__check-form');
+
+            formCode.find('.js-timer').show();
+            formCode.find('.js-timer__count').text('60');
+            formCode.find('.js-resend').hide();
+
+            lemurro.auth._runTimer();
+
+            $('#js-auth__get-form').hide();
+            formCode.show();
+        }
+    });
+};
+/**
+ * Сброс сессии
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.auth.logout = function () {
+    lemurro.helper.showConfirm('Выход', 'Вы действительно хотите выйти из системы?', 'Да', 'Нет', null, null, function () {
+        $('.js-user-data').html('<i class="fas fa-spinner fa-pulse"></i>');
+        localforage.clear();
+        lemurro.sessionID = '';
+        lemurro.authScreen('show');
+    }, null);
+};
+/**
  * Хелперы
  *
  * @version 26.10.2018
@@ -7225,6 +7225,59 @@ lemurro.helper.showConfirm = function (title, content, confirmButtonText, cancel
             }
         }
     });
+};
+/**
+ * Операции с табами
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+lemurro.tabs = {};
+/**
+ * Покажем указанный таб
+ *
+ * @param {string} tabID Идентификатор нужного таба
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.tabs.showTab = function (tabID) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    tabsLinks.find('.nav-link').removeClass('active show');
+    tabsContents.find('.tab-pane').removeClass('active show');
+
+    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
+    tabsContents.find('#' + tabID).addClass('active show');
+};
+/**
+ * Скрыть\Показать вторую вкладку
+ *
+ * @param {string} action Действие (show|hide)
+ *
+ * @version 26.10.2018
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.tabs.tabInsertEdit = function (action) {
+    var tabsLinks    = $('#js-tabs__links');
+    var tabsContents = $('#js-tabs__contents');
+
+    if (action === 'show') {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
+        tabsContents.find('#tab-form').addClass('active show');
+        lemurro.tabs.showTab('tab-form');
+    } else {
+        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
+        tabsContents.find('#tab-form').removeClass('active show');
+        lemurro.tabs.showTab('tab-list');
+    }
 };
 /**
  * Операции со справочниками
@@ -7484,59 +7537,6 @@ lemurro.guide.showInsertForm = function (callback) {
     lemurro.tabs.tabInsertEdit('show');
 
     callback();
-};
-/**
- * Операции с табами
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
- *
- * @type {object}
- */
-lemurro.tabs = {};
-/**
- * Покажем указанный таб
- *
- * @param {string} tabID Идентификатор нужного таба
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.tabs.showTab = function (tabID) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    tabsLinks.find('.nav-link').removeClass('active show');
-    tabsContents.find('.tab-pane').removeClass('active show');
-
-    tabsLinks.find('a[data-target="#' + tabID + '"]').addClass('active show');
-    tabsContents.find('#' + tabID).addClass('active show');
-};
-/**
- * Скрыть\Показать вторую вкладку
- *
- * @param {string} action Действие (show|hide)
- *
- * @version 26.10.2018
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-lemurro.tabs.tabInsertEdit = function (action) {
-    var tabsLinks    = $('#js-tabs__links');
-    var tabsContents = $('#js-tabs__contents');
-
-    if (action === 'show') {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
-        tabsContents.find('#tab-form').addClass('active show');
-        lemurro.tabs.showTab('tab-form');
-    } else {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
-        tabsContents.find('#tab-form').removeClass('active show');
-        lemurro.tabs.showTab('tab-list');
-    }
 };
 /**
  * Работа с пользователями
