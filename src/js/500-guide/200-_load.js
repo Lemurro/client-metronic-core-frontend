@@ -1,7 +1,7 @@
 /**
  * Загрузка справочника
  *
- * @version 06.12.2018
+ * @version 24.04.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.guide._load = function () {
@@ -29,6 +29,8 @@ lemurro.guide._load = function () {
         lemurro.guide._templates = {
             item: Template7.compile($('#js-tpl-guide__item').html())
         };
+
+        lemurro._bindForAll();
 
         // Получим данные справочника
         lemurro.guide._getData();

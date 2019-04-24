@@ -1,7 +1,7 @@
 /**
  * Определим загруженную страницу и запустим ее init() если он есть
  *
- * @version 11.12.2018
+ * @version 24.04.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro._loadPage = function () {
@@ -24,12 +24,7 @@ lemurro._loadPage = function () {
             link.addClass(link.attr('data-active-class'));
         });
 
-        // Обновление ссылок маршрутизатора
-        lemurro.router.updatePageLinks();
-
-        lemurro._bindInputmask();
-        lemurro._bindSelect2();
-        lemurro._bindTableFilter();
+        lemurro._bindForAll();
 
         if (!isEmpty(app.page.onLoad)) {
             app.page.onLoad();
