@@ -1,10 +1,10 @@
 /**
  * Редактирование
  *
- * @param {integer}  id       ИД пользователя
+ * @param {string}   id       ИД пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 21.02.2019
+ * @version 30.04.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.edit = function (id, callback) {
@@ -18,6 +18,14 @@ lemurro.users.edit = function (id, callback) {
 
             container.attr('data-id', id);
             container.find('.js-title').text('Редактирование пользователя');
+
+            if (id === '1') {
+                container.find('.js-user-id-1').prop('disabled', true);
+
+                swal('Внимание!', 'У данного пользователя некоторые поля запрещены к изменению', 'warning');
+            } else {
+                container.find('.js-user-id-1').prop('disabled', false);
+            }
 
             $('#js-user__button-insert').hide();
             $('#js-user__button-save').show();
