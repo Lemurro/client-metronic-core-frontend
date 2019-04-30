@@ -2,6 +2,7 @@ var gulp     = require('gulp');           // Сам Gulp JS
 var cleanCSS = require('gulp-clean-css'); // Минификация CSS
 var concat   = require('gulp-concat');    // Склейка файлов
 var rename   = require('gulp-rename');    // Переименование файлов
+var sort     = require('gulp-sort');      // Сортировка списка файлов
 var uglify   = require('gulp-uglify');    // Минификация JS
 var del      = require('del');            // Удаление файлов
 
@@ -66,6 +67,7 @@ function watcherJS() {
 
 function coreCSS() {
     return gulp.src('src/css/*.css')
+        .pipe(sort())
         .pipe(concat('core.css'))
         .pipe(gulp.dest('dist'));
 }
@@ -97,6 +99,7 @@ function concatMinCSS() {
 
 function coreJS() {
     return gulp.src('src/js/**/*.js')
+        .pipe(sort())
         .pipe(concat('core.js'))
         .pipe(gulp.dest('dist'));
 }

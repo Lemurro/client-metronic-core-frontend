@@ -20,6 +20,7 @@
   "dependencies": {
     "bowser": "~2.1.2",
     "dimns-is-empty-js": "~1.1.0",
+    "gulp-sort": "^2.0.0",
     "jquery-lightajax": "~1.0.1",
     "jquery-tablefilter": "~1.1.0",
     "localforage": "~1.7.3",
