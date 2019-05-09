@@ -1,7 +1,7 @@
 /**
  * Вернуться обратно
  *
- * @version 26.10.2018
+ * @version 09.05.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.return = function () {
@@ -25,7 +25,7 @@ lemurro.users.return = function () {
             if (result.value) {
                 localforage.removeItem('lastSessionID', function () {
                     localforage.setItem('sessionID', lastSessionID, function () {
-                        location.replace(location.origin);
+                        location.reload();
                     });
                 });
             }
