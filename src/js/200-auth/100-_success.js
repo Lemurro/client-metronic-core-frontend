@@ -1,7 +1,7 @@
 /**
  * Проверка сессии и загрузка данных о пользователе прошли успешно
  *
- * @version 29.11.2018
+ * @version 09.05.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.auth._success = function () {
@@ -33,9 +33,6 @@ lemurro.auth._success = function () {
     // Скрываем более ненужный оверлей прелоадера
     $('#js-preloader-overlay').hide();
 
-    // Запустим инициализацию приложения
-    app.init();
-
-    // Загрузим страницу определённую маршрутизатором
-    lemurro._loadPage();
+    // Запустим инициализацию приложения и передадим callback для выполнения
+    app.init(lemurro._loadPage);
 };
