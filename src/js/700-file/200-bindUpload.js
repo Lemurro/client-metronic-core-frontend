@@ -4,7 +4,7 @@
  * @param {jQuery}   btn      jQuery-объект указывающий на кнопку к которой привязать загрузчик
  * @param {function} callback Функция, вызываемая после успешной загрузки файла
  *
- * @version 21.02.2019
+ * @version 15.05.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.file.bindUpload = function (btn, callback) {
@@ -29,7 +29,7 @@ lemurro.file.bindUpload = function (btn, callback) {
                 lemurro.showErrors(result.errors);
             } else {
                 if (!isEmpty(callback)) {
-                    callback(result.data.id, 'add', filename);
+                    callback(result.data.id, 'add', filename, btn);
                 }
 
                 swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
