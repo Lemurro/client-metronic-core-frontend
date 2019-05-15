@@ -3,14 +3,21 @@
  *
  * @param {jQuery}   btn        jQuery-объект указывающий на кнопку к которой привязать загрузчик
  * @param {function} onComplete Функция, вызываемая после успешной загрузки файла
+ * @param {object}   options    Переопределение параметров
  *
  * @version 15.05.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
-lemurro.file.bindUpload = function (btn, onComplete) {
+lemurro.file.bindUpload = function (btn, onComplete, options) {
     var btnContent = btn.html();
 
-    var uploader = new ss.SimpleUpload({
+    // Проверка на наличие объекта
+    if (isEmpty(options)) {
+        options = {};
+    }
+
+    // Настройки
+    var settings = $.extend({
         button    : btn,
         onSubmit  : function () {
             btn.html('<i class="fas fa-spinner fa-pulse"></i> Загрузка...').prop('disabled', true); // change button text to "Uploading..."
@@ -39,5 +46,7 @@ lemurro.file.bindUpload = function (btn, onComplete) {
 
             swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
         }
-    });
+    }, options);
+
+    new ss.SimpleUpload(settings);
 };
