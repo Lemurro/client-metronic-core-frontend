@@ -19,13 +19,13 @@
     "gulp-uglify": "^1.5.4"
   },
   "dependencies": {
-    "bowser": "~2.1.2",
+    "bowser": "~2.4.0",
     "dimns-is-empty-js": "~1.1.0",
     "jquery-lightajax": "~1.0.1",
     "jquery-tablefilter": "~1.1.0",
     "localforage": "~1.7.3",
     "navigo": "~7.1.2",
-    "select2": "~4.0.6-rc.1",
+    "select2": "~4.0.7",
     "simple-ajax-uploader": "~2.5.5",
     "template7": "~1.4.1"
   }
