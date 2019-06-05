@@ -1,7 +1,7 @@
 /**
  * Нарисуем форму выбора прав доступа
  *
- * @version 11.12.2018
+ * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users._initRoles = function () {
@@ -29,4 +29,6 @@ lemurro.users._initRoles = function () {
             access   : access
         }));
     }
+
+    $('#js-access-sets__roles').html(container.html());
 };
