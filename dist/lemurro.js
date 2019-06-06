@@ -7559,7 +7559,7 @@ lemurro.guide.showInsertForm = function (callback) {
 /**
  * Работа с пользователями
  *
- * @version 11.12.2018
+ * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 
@@ -7573,26 +7573,31 @@ lemurro.users = {};
 /**
  * Инициализация
  *
- * @version 11.12.2018
+ * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.init = function () {
+    lemurro.users._t7helperAccessSets();
+
     /**
      * Объект для хранения шаблонов
      *
      * @type {object}
      */
     lemurro.users._templates = {
-        roles: Template7.compile($('#js-tpl-user__roles').html())
+        roles          : Template7.compile($('#js-tpl-user__roles').html()),
+        accessSetsItem : Template7.compile($('#js-tpl-access-sets__item').html()),
+        accessSetsRoles: Template7.compile($('#js-tpl-access-sets__roles').html())
     };
 
     lemurro.users._initRoles();
     users.init();
+    lemurro.accessSets.getData();
 };
 /**
  * Нарисуем форму выбора прав доступа
  *
- * @version 11.12.2018
+ * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users._initRoles = function () {
@@ -7620,6 +7625,48 @@ lemurro.users._initRoles = function () {
             access   : access
         }));
     }
+
+    $('#js-access-sets__roles').html(container.html());
+};
+/**
+ * Зарегистрируем Template7-хелпер: lemurroaccesssets
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.users._t7helperAccessSets = function () {
+    Template7.registerHelper('lemurroaccesssets', function (roles) {
+        var data = [];
+
+        var titles = {};
+        for (var i in app.config.userRoles.list) {
+            if (app.config.userRoles.list.hasOwnProperty(i)) {
+                var role = app.config.userRoles.list[i];
+
+                titles[role.name] = role.title;
+            }
+        }
+
+        for (var name in roles) {
+            if (roles.hasOwnProperty(name)) {
+                var access    = roles[name];
+                var arrAccess = [];
+
+                for (var k in access) {
+                    if (access.hasOwnProperty(k) && app.config.userRoles.guideAccess.hasOwnProperty(access[k])) {
+                        arrAccess.push(app.config.userRoles.guideAccess[access[k]]);
+                    }
+                }
+
+                data.push({
+                    title : (titles.hasOwnProperty(name) ? titles[name] : '!неизвестно>>' + name),
+                    access: arrAccess
+                });
+            }
+        }
+
+        return lemurro.users._templates.accessSetsRoles(data);
+    });
 };
 /**
  * Редактирование
@@ -7745,6 +7792,46 @@ lemurro.users.insert = function (data, callback) {
             callback(result);
         }
     });
+};
+/**
+ * Заблокировать пользователя
+ *
+ * @param {string} id ИД пользователя
+ *
+ * @version 03.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.users.lock = function (id) {
+    if (id === '1') {
+        swal('Внимание!', 'Блокировка пользователя с id=1 запрещена', 'warning');
+    } else {
+        var authID = $('#js-users__items').find('tr[data-item-id="' + id + '"] .auth_id').text();
+
+        swal({
+            title            : 'Блокировка пользователя',
+            html             : 'Вы хотите заблокировать <strong>"' + authID + '"</strong>?',
+            type             : 'warning',
+            showCancelButton : true,
+            confirmButtonText: 'Да, заблокировать',
+            cancelButtonText : 'Нет'
+        }).then(function (result) {
+            if (result.value) {
+                lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/lock', {}, function (result) {
+                    lemurro.lightajax.preloader('hide');
+
+                    if (result.hasOwnProperty('errors')) {
+                        lemurro.showErrors(result.errors);
+                    } else {
+                        var newRecord = $(users.templates.item(result.data));
+
+                        $('#js-users__items')
+                            .find('tr[data-item-id="' + result.data.id + '"]')
+                            .html(newRecord.html());
+                    }
+                });
+            }
+        });
+    }
 };
 /**
  * Вход под указанным пользователем
@@ -7927,6 +8014,296 @@ lemurro.users.showInsertForm = function (callback) {
     lemurro.tabs.tabInsertEdit('show');
 
     callback();
+};
+/**
+ * Разблокировать пользователя
+ *
+ * @param {string} id ИД пользователя
+ *
+ * @version 03.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.users.unlock = function (id) {
+    var authID = $('#js-users__items').find('tr[data-item-id="' + id + '"] .auth_id').text();
+
+    swal({
+        title            : 'Разблокировка пользователя',
+        html             : 'Вы хотите разблокировать <strong>"' + authID + '"</strong>?',
+        type             : 'warning',
+        showCancelButton : true,
+        confirmButtonText: 'Да, разблокировать',
+        cancelButtonText : 'Нет'
+    }).then(function (result) {
+        if (result.value) {
+            lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/unlock', {}, function (result) {
+                lemurro.lightajax.preloader('hide');
+
+                if (result.hasOwnProperty('errors')) {
+                    lemurro.showErrors(result.errors);
+                } else {
+                    var newRecord = $(users.templates.item(result.data));
+
+                    $('#js-users__items')
+                        .find('tr[data-item-id="' + result.data.id + '"]')
+                        .html(newRecord.html());
+                }
+            });
+        }
+    });
+};
+/**
+ * Работа с наборами прав доступа
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+
+/**
+ * Объект элемента
+ *
+ * @type {object}
+ */
+lemurro.accessSets = {};
+/**
+ * Сбор данных формы
+ *
+ * @return {object}
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets._collectData = function () {
+    var form = $('#js-access-sets-form');
+
+    if (form.valid()) {
+        return {
+            id   : form.attr('data-id'),
+            name : form.find('input[name="name"]').val(),
+            roles: lemurro.users.getRoles(form)
+        };
+    } else {
+        swal('Внимание!', 'Заполните все поля, помеченные красным', 'warning');
+
+        return {};
+    }
+};
+/**
+ * Применим выбранный набор
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets.apply = function () {
+    var select = $('#js-user__access-sets').find('select');
+    var id = select.val();
+
+    if (!isEmpty(id)) {
+        lemurro.lightajax.get(true, pathServerAPI + 'access_sets/' + id, {}, function (result) {
+            lemurro.lightajax.preloader('hide');
+
+            if (result.hasOwnProperty('errors')) {
+                lemurro.showErrors(result.errors);
+            } else {
+                lemurro.users.setRoles($('#js-user-form'), result.data.roles);
+
+                select.val(null);
+
+                swal('Выполнено', 'Успешно применён набор "' + result.data.name + '"', 'success');
+            }
+        });
+    }
+};
+/**
+ * Скроем форму
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets.closeForm = function () {
+    $('#js-access-sets-form').hide();
+    $('#js-access-sets__button-add').show();
+};
+/**
+ * Редактирование
+ *
+ * @param {string} id ИД набора
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets.edit = function (id) {
+    lemurro.lightajax.get(true, pathServerAPI + 'access_sets/' + id, {}, function (result) {
+        lemurro.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            lemurro.showErrors(result.errors);
+        } else {
+            var container = $('#js-access-sets-form');
+
+            container.attr('data-id', id);
+            container.find('.js-title').text('Редактирование набора');
+            container.find('input[name="name"]').val(result.data.name);
+
+            $('#js-access-sets__button-insert').hide();
+            $('#js-access-sets__button-save').show();
+            $('#js-access-sets__button-add').hide();
+
+            lemurro.users.setRoles(container, result.data.roles);
+
+            container.show();
+        }
+    });
+};
+/**
+ * Список
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets.getData = function () {
+    lemurro.lightajax.get(true, pathServerAPI + 'access_sets', {}, function (result) {
+        lemurro.lightajax.preloader('hide');
+
+        if (result.hasOwnProperty('errors')) {
+            lemurro.showErrors(result.errors);
+        } else {
+            var containerItems  = $('#js-access-sets__items');
+            var containerSelect = $('#js-user__access-sets');
+
+            var htmlItems  = '';
+            var htmlSelect = '';
+
+            for (var i in result.data.items) {
+                if (result.data.items.hasOwnProperty(i)) {
+                    var item = result.data.items[i];
+
+                    htmlItems += lemurro.users._templates.accessSetsItem(item);
+                    htmlSelect += '<option value="' + item.id + '">' + item.name + '</option>';
+                }
+            }
+
+            containerItems.html(htmlItems);
+            containerSelect.find('select').html(htmlSelect);
+
+            if (!isEmpty(htmlSelect)) {
+                containerSelect.show();
+            }
+        }
+    });
+};
+/**
+ * Добавление
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets.insert = function () {
+    var data = lemurro.accessSets._collectData();
+
+    if (Object.keys(data).length > 0) {
+        lemurro.lightajax.post(true, pathServerAPI + 'access_sets', {
+            data: data
+        }, function (result) {
+            lemurro.lightajax.preloader('hide');
+
+            if (result.hasOwnProperty('errors')) {
+                lemurro.showErrors(result.errors);
+            } else {
+                $('#js-access-sets__items').prepend(lemurro.users._templates.accessSetsItem(result.data));
+
+                $('#js-access-sets-form').hide();
+                $('#js-access-sets__button-add').show();
+            }
+        });
+    }
+};
+/**
+ * Удаление
+ *
+ * @param {string} id ИД набора
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets.remove = function (id) {
+    var name = $('#js-access-sets__items').find('tr[data-item-id="' + id + '"] .name').text();
+
+    swal({
+        title            : 'Удаление набора',
+        html             : 'Вы хотите удалить <strong>"' + name + '"</strong>?',
+        type             : 'warning',
+        showCancelButton : true,
+        confirmButtonText: 'Да, удалить!',
+        cancelButtonText : 'Отмена'
+    }).then(function (result) {
+        if (result.value) {
+            lemurro.lightajax.post(true, pathServerAPI + 'access_sets/' + id + '/remove', {}, function (result) {
+                lemurro.lightajax.preloader('hide');
+
+                if (result.hasOwnProperty('errors')) {
+                    lemurro.showErrors(result.errors);
+                } else {
+                    $('#js-access-sets__items').find('tr[data-item-id="' + result.data.id + '"]')
+                        .remove();
+
+                    swal('Выполнено', 'Запись успешно удалена', 'success');
+                }
+            });
+        } else {
+
+        }
+    });
+};
+/**
+ * Изменение
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets.save = function () {
+    var data = lemurro.accessSets._collectData();
+
+    if (Object.keys(data).length > 0) {
+        lemurro.lightajax.post(true, pathServerAPI + 'access_sets/' + data.id, {
+            data: data
+        }, function (result) {
+            lemurro.lightajax.preloader('hide');
+
+            if (result.hasOwnProperty('errors')) {
+                lemurro.showErrors(result.errors);
+            } else {
+                var newRecord = $(lemurro.users._templates.accessSetsItem(result.data));
+
+                $('#js-access-sets__items')
+                    .find('tr[data-item-id="' + result.data.id + '"]')
+                    .html(newRecord.html());
+
+                $('#js-access-sets-form').hide();
+                $('#js-access-sets__button-add').show();
+
+                swal('Выполнено', 'Запись успешно изменена', 'success');
+            }
+        });
+    }
+};
+/**
+ * Покажем форму добавления
+ *
+ * @version 05.06.2019
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ */
+lemurro.accessSets.showInsertForm = function () {
+    var container = $('#js-access-sets-form');
+
+    container.attr('data-id', '0');
+    container.find('.js-title').text('Добавление набора');
+    lemurro.helper.clearFields(container);
+
+    $('#js-access-sets__button-insert').show();
+    $('#js-access-sets__button-save').hide();
+    $('#js-access-sets__button-add').hide();
+
+    container.show();
 };
 /**
  * Работа с файлами
