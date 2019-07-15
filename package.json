@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "bowser": "2.4.*",
-    "dimns-is-empty-js": "1.1.*",
+    "dimns-is-empty-js": "1.2.*",
     "jquery-lightajax": "1.0.*",
     "jquery-tablefilter": "1.1.*",
     "localforage": "1.7.*",
