@@ -4,7 +4,7 @@
  * @param {string}   id       ИД пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 30.04.2019
+ * @version 09.08.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.edit = function (id, callback) {
@@ -26,6 +26,8 @@ lemurro.users.edit = function (id, callback) {
             } else {
                 container.find('.js-user-id-1').prop('disabled', false);
             }
+
+            $('#js-user__access-sets').find('select').val(null);
 
             $('#js-user__button-insert').hide();
             $('#js-user__button-save').show();

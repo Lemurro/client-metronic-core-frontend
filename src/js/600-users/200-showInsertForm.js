@@ -3,7 +3,7 @@
  *
  * @param {function} callback Функция обратного вызова
  *
- * @version 30.04.2019
+ * @version 09.08.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.users.showInsertForm = function (callback) {
@@ -14,6 +14,8 @@ lemurro.users.showInsertForm = function (callback) {
     lemurro.helper.clearFields(container);
 
     container.find('.js-user-id-1').prop('disabled', false);
+
+    $('#js-user__access-sets').find('select').val(null);
 
     $('#js-user__button-insert').show();
     $('#js-user__button-save').hide();
