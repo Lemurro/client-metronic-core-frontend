@@ -1,7 +1,7 @@
 /**
  * Изменение
  *
- * @version 05.06.2019
+ * @version 09.08.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.accessSets.save = function () {
@@ -21,6 +21,8 @@ lemurro.accessSets.save = function () {
                 $('#js-access-sets__items')
                     .find('tr[data-item-id="' + result.data.id + '"]')
                     .html(newRecord.html());
+
+                lemurro.accessSets.getData();
 
                 $('#js-access-sets-form').hide();
                 $('#js-access-sets__button-add').show();
