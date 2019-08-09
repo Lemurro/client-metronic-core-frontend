@@ -1,13 +1,11 @@
 /**
  * Список
  *
- * @version 05.06.2019
+ * @version 09.08.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  */
 lemurro.accessSets.getData = function () {
-    lemurro.lightajax.get(true, pathServerAPI + 'access_sets', {}, function (result) {
-        lemurro.lightajax.preloader('hide');
-
+    lemurro.lightajax.get(false, pathServerAPI + 'access_sets', {}, function (result) {
         if (result.hasOwnProperty('errors')) {
             lemurro.showErrors(result.errors);
         } else {
@@ -29,7 +27,7 @@ lemurro.accessSets.getData = function () {
             containerItems.html(htmlItems);
             containerSelect.find('select').html(htmlSelect);
 
-            if (!isEmpty(htmlSelect)) {
+            if (notEmpty(htmlSelect)) {
                 containerSelect.show();
             }
         }
