@@ -3591,11 +3591,11 @@ return Navigo;
 
 })));
 
-/*! Select2 4.0.7 | https://github.com/select2/select2/blob/master/LICENSE.md */
+/*! Select2 4.0.10 | https://github.com/select2/select2/blob/master/LICENSE.md */
 
-(function(){if(jQuery&&jQuery.fn&&jQuery.fn.select2&&jQuery.fn.select2.amd)var e=jQuery.fn.select2.amd;return e.define("select2/i18n/ru",[],function(){function e(e,t,n,r){return e%10<5&&e%10>0&&e%100<5||e%100>20?e%10>1?n:t:r}return{errorLoading:function(){return"Невозможно загрузить результаты"},inputTooLong:function(t){var n=t.input.length-t.maximum,r="Пожалуйста, введите на "+n+" символ";return r+=e(n,"","a","ов"),r+=" меньше",r},inputTooShort:function(t){var n=t.minimum-t.input.length,r="Пожалуйста, введите ещё хотя бы "+n+" символ";return r+=e(n,"","a","ов"),r},loadingMore:function(){return"Загрузка данных…"},maximumSelected:function(t){var n="Вы можете выбрать не более "+t.maximum+" элемент";return n+=e(t.maximum,"","a","ов"),n},noResults:function(){return"Совпадений не найдено"},searching:function(){return"Поиск…"},removeAllItems:function(){return"Удалить все элементы"}}}),{define:e.define,require:e.require}})();
+!function(){if(jQuery&&jQuery.fn&&jQuery.fn.select2&&jQuery.fn.select2.amd)var n=jQuery.fn.select2.amd;n.define("select2/i18n/ru",[],function(){function n(n,e,r,u){return n%10<5&&n%10>0&&n%100<5||n%100>20?n%10>1?r:e:u}return{errorLoading:function(){return"Невозможно загрузить результаты"},inputTooLong:function(e){var r=e.input.length-e.maximum,u="Пожалуйста, введите на "+r+" символ";return u+=n(r,"","a","ов"),u+=" меньше"},inputTooShort:function(e){var r=e.minimum-e.input.length,u="Пожалуйста, введите ещё хотя бы "+r+" символ";return u+=n(r,"","a","ов")},loadingMore:function(){return"Загрузка данных…"},maximumSelected:function(e){var r="Вы можете выбрать не более "+e.maximum+" элемент";return r+=n(e.maximum,"","a","ов")},noResults:function(){return"Совпадений не найдено"},searching:function(){return"Поиск…"},removeAllItems:function(){return"Удалить все элементы"}}}),n.define,n.require}();
 /**
- * Template7 1.4.1
+ * Template7 1.4.2
  * Mobile-first HTML template engine
  * 
  * http://www.idangero.us/template7/
@@ -3606,7 +3606,7 @@ return Navigo;
  * 
  * Licensed under MIT
  * 
- * Released on: February 5, 2019
+ * Released on: June 14, 2019
  */
 
 (function (global, factory) {
@@ -3844,7 +3844,11 @@ return Navigo;
             else { variable = undefined; }
           });
         }
-        if (typeof variable === 'string') {
+        if (
+          (typeof variable === 'string')
+          || Array.isArray(variable)
+          || (variable.constructor && variable.constructor === Object)
+        ) {
           variable = JSON.stringify(variable);
         }
         if (variable === undefined) { variable = 'undefined'; }
@@ -3852,6 +3856,7 @@ return Navigo;
         arr.push(variable);
         return arr;
       }, []).join('');
+
     },
     parseJsParents: function parseJsParents(expression, parents) {
       return expression.split(/([+ \-*^()&=|<>!%:?])/g).reduce(function (arr, part) {
@@ -3963,6 +3968,7 @@ return Navigo;
       return p.compiled(ctx, options.data, options.root);
     },
     escape: function escape(context) {
+      if (typeof context === 'undefined' || context === null) { return ''; }
       if (typeof context !== 'string') {
         throw new Error('Template7: Passed context to "escape" helper should be a string');
       }
@@ -4256,10 +4262,10 @@ return Navigo;
 
 /**
  * Simple Ajax Uploader
- * Version 2.6.2
+ * Version 2.6.6
  * https://github.com/LPology/Simple-Ajax-Uploader
  *
- * Copyright 2012-2017 LPology, LLC
+ * Copyright 2012-2019 LPology, LLC
  * Released under the MIT license
  */
 
@@ -4566,7 +4572,8 @@ ss.copyLayout = function( from, to ) {
     var box = ss.getBox( from );
 
     ss.addStyles( to, {
-        position: 'relative',
+        position: 'absolute',
+        display: 'block',
         left : box.left + 'px',
         top : box.top + 'px',
         width : from.offsetWidth + 'px',
@@ -6254,8 +6261,9 @@ ss.extendObj( ss.SimpleUpload.prototype, {
         }
 
         ss.addStyles( div, {
-            'display' : 'block',
+            'display' : 'none',
             'position' : 'relative',
+            'visibility' : 'hidden',
             'overflow' : 'hidden',
             'margin' : 0,
             'padding' : 0,
@@ -6269,7 +6277,7 @@ ss.extendObj( ss.SimpleUpload.prototype, {
         }
 
         ss.addStyles( this._input, {
-            'position' : 'relative',
+            'position' : 'absolute',
             'right' : 0,
             'margin' : 0,
             'padding' : 0,
@@ -6531,6 +6539,7 @@ ss.extendObj( ss.SimpleUpload.prototype, ss.DragAndDrop );
 return ss;
 
 }));
+
 
 /**
  * Загрузочный скрипт приложения
