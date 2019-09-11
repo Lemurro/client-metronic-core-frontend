@@ -22,8 +22,8 @@ var jsLibs = [
     'node_modules/localforage/dist/localforage.js',
     'node_modules/navigo/lib/navigo.js',
     'node_modules/select2/dist/js/i18n/ru.js',
-    'node_modules/simple-ajax-uploader/SimpleAjaxUploader.js',
-    'node_modules/template7/dist/template7.js'
+    'node_modules/template7/dist/template7.js',
+    'src/plugins/SimpleAjaxUploader/SimpleAjaxUploader.js'
 ];
 
 var jsLibsMin = [
@@ -34,8 +34,8 @@ var jsLibsMin = [
     'node_modules/localforage/dist/localforage.min.js',
     'node_modules/navigo/lib/navigo.min.js',
     'node_modules/select2/dist/js/i18n/ru.js',
-    'node_modules/simple-ajax-uploader/SimpleAjaxUploader.min.js',
-    'node_modules/template7/dist/template7.min.js'
+    'node_modules/template7/dist/template7.min.js',
+    'src/plugins/SimpleAjaxUploader/SimpleAjaxUploader.min.js'
 ];
 
 // CLEAN
