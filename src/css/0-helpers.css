@@ -2,10 +2,18 @@
     width: 1px;
 }
 
+.w20 {
+    width: 20px;
+}
+
 .hidden {
     display: none;
 }
 
 .font-100 {
     font-size: 100px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }
