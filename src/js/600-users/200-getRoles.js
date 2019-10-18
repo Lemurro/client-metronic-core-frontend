@@ -1,12 +1,12 @@
 /**
  * Получение отмеченных ролей пользователя
  *
- * @param {jQuery} form Элемент формы
+ * @param {JQuery} form Элемент формы
  *
  * @return {object}
  *
- * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 18.10.2019
  */
 lemurro.users.getRoles = function (form) {
     var roles = {};

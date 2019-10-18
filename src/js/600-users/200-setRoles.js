@@ -1,11 +1,11 @@
 /**
  * Установка ролей пользователя (отметка checkbox)
  *
- * @param {jQuery} form  Элемент формы
+ * @param {JQuery} form  Элемент формы
  * @param {object} roles Список ролей пользователя
  *
- * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 18.10.2019
  */
 lemurro.users.setRoles = function (form, roles) {
     form.find('.js-role').prop('checked', false);
@@ -15,7 +15,10 @@ lemurro.users.setRoles = function (form, roles) {
             form.find('.js-role[data-role="admin"]').prop('checked', true);
         } else {
             for (var i in roles[role]) {
-                form.find('.js-role[data-role="' + role + '"][data-access="' + roles[role][i] + '"]').prop('checked', true);
+                if (roles[role].hasOwnProperty(i)) {
+                    form.find('.js-role[data-role="' + role + '"][data-access="' + roles[role][i] + '"]')
+                        .prop('checked', true);
+                }
             }
         }
     }

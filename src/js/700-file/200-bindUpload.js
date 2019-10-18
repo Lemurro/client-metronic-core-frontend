@@ -1,12 +1,12 @@
 /**
  * Подключение загрузчика файлов
  *
- * @param {jQuery}   btn        jQuery-объект указывающий на кнопку к которой привязать загрузчик
+ * @param {JQuery}   btn        jQuery-объект указывающий на кнопку к которой привязать загрузчик
  * @param {function} onComplete Функция, вызываемая после успешной загрузки файла
  * @param {object}   options    Переопределение параметров
  *
- * @version 15.05.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 18.10.2019
  */
 lemurro.file.bindUpload = function (btn, onComplete, options) {
     var btnContent = btn.html();
