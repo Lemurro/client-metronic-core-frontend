@@ -1,15 +1,20 @@
 /**
  * Инициируем форму входа
  *
- * @version 27.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 24.10.2019
  */
 lemurro._initAuthForm = function () {
     var authForm  = $('#js-auth');
     var getForm   = $('#js-auth__get-form');
     var checkForm = $('#js-auth__check-form');
-    var authType  = app.config.auth.type;
-    var strings   = app.config.auth.strings[authType];
+
+    var authType = app.config.auth.type;
+    if (!app.config.auth.strings.hasOwnProperty(authType)) {
+        authType = 'mixed';
+    }
+
+    var strings = app.config.auth.strings[authType];
 
     getForm.find('.js-auth__auth-id').html(strings.getForm.inputLabel);
     getForm.find('input[name="auth_id"]').addClass(strings.getForm.inputClass);
