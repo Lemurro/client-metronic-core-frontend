@@ -6,7 +6,7 @@
  * @param {object}   options    Переопределение параметров
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 18.10.2019
+ * @version 31.10.2019
  */
 lemurro.file.bindUpload = function (btn, onComplete, options) {
     var btnContent = btn.html();
@@ -36,9 +36,9 @@ lemurro.file.bindUpload = function (btn, onComplete, options) {
             } else {
                 if (typeof onComplete === 'function') {
                     onComplete(result.data.id, 'add', filename, btn);
+                } else {
+                    swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
                 }
-
-                swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
             }
         },
         onError   : function (filename) {
