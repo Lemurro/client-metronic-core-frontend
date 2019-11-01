@@ -15,6 +15,7 @@ var cssLibsMin = [
 ];
 
 var jsLibs = [
+    'node_modules/bootstrap-confirmation2/dist/bootstrap-confirmation.js',
     'node_modules/bowser/bundled.js',
     'node_modules/dimns-is-empty-js/dist/isEmpty.js',
     'node_modules/jquery-lightajax/dist/jquery.lightajax.js',
@@ -27,6 +28,7 @@ var jsLibs = [
 ];
 
 var jsLibsMin = [
+    'node_modules/bootstrap-confirmation2/dist/bootstrap-confirmation.min.js',
     'node_modules/bowser/bundled.js',
     'node_modules/dimns-is-empty-js/dist/isEmpty.min.js',
     'node_modules/jquery-lightajax/dist/jquery.lightajax.min.js',
