@@ -2,14 +2,19 @@
  * Отобразим список пользователей
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 27.09.2019
+ * @version 01.11.2019
  */
 lemurro.users.showData = function (data) {
-    var html = '';
+    var container = $('#js-users__items');
+    var html      = '';
 
     for (var i in data.items) {
-        html += users.templates.item(data.items[i]);
+        if (data.items.hasOwnProperty(i)) {
+            html += users.templates.item(data.items[i]);
+        }
     }
 
-    $('#js-users__items').html(html);
+    container.html(html);
+
+    lemurro.helper.initBootstrapConfirmation(container, null);
 };

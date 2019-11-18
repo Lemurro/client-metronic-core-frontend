@@ -1,8 +1,8 @@
 /**
  * Список элементов справочника
  *
- * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 01.11.2019
  */
 lemurro.guide._getData = function () {
     lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name, {}, function (result) {
@@ -16,14 +16,19 @@ lemurro.guide._getData = function () {
             if (result.data.count === 0) {
                 $('#js-guide__empty').show();
             } else {
-                var html = '';
+                var container = $('#js-guide__items');
+                var html      = '';
 
                 for (var i in result.data.items) {
-                    html += lemurro.guide._templates.item(result.data.items[i]);
+                    if (result.data.items.hasOwnProperty(i)) {
+                        html += lemurro.guide._templates.item(result.data.items[i]);
+                    }
                 }
 
-                $('#js-guide__items').html(html);
+                container.html(html);
                 $('#js-guide__list').show();
+
+                lemurro.helper.initBootstrapConfirmation(container, null);
             }
 
             if (

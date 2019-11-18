@@ -3,34 +3,22 @@
  *
  * @param {string} id ИД пользователя
  *
- * @version 03.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 01.11.2019
  */
 lemurro.users.unlock = function (id) {
-    var authID = $('#js-users__items').find('tr[data-item-id="' + id + '"] .auth_id').text();
+    lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/unlock', {}, function (result) {
+        lemurro.lightajax.preloader('hide');
 
-    swal({
-        title            : 'Разблокировка пользователя',
-        html             : 'Вы хотите разблокировать <strong>"' + authID + '"</strong>?',
-        type             : 'warning',
-        showCancelButton : true,
-        confirmButtonText: 'Да, разблокировать',
-        cancelButtonText : 'Нет'
-    }).then(function (result) {
-        if (result.value) {
-            lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/unlock', {}, function (result) {
-                lemurro.lightajax.preloader('hide');
+        if (result.hasOwnProperty('errors')) {
+            lemurro.showErrors(result.errors);
+        } else {
+            var newRecord = $(users.templates.item(result.data));
+            var row       = $('#js-users__items').find('tr[data-item-id="' + result.data.id + '"]');
 
-                if (result.hasOwnProperty('errors')) {
-                    lemurro.showErrors(result.errors);
-                } else {
-                    var newRecord = $(users.templates.item(result.data));
+            row.html(newRecord.html());
 
-                    $('#js-users__items')
-                        .find('tr[data-item-id="' + result.data.id + '"]')
-                        .html(newRecord.html());
-                }
-            });
+            lemurro.helper.initBootstrapConfirmation(row, null);
         }
     });
 };
