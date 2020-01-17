@@ -1,8 +1,8 @@
 /**
  * Инициализация ядра
  *
- * @version 13.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 17.01.2020
  */
 lemurro.init = function () {
     /**
@@ -37,6 +37,10 @@ lemurro.init = function () {
             }
         }
     });
+
+    // Определяем настройки по умолчанию для Select2
+    $.fn.select2.defaults.set('language', 'ru');
+    $.fn.select2.defaults.set('placeholder', 'Выберите из списка');
 
     // Ловим js-ошибки
     lemurro._bindJSerrors();
