@@ -2,7 +2,7 @@
  * Инициируем форму входа
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 24.10.2019
+ * @version 17.01.2020
  */
 lemurro._initAuthForm = function () {
     var authForm  = $('#js-auth');
@@ -17,10 +17,27 @@ lemurro._initAuthForm = function () {
     var strings = app.config.auth.strings[authType];
 
     getForm.find('.js-auth__auth-id').html(strings.getForm.inputLabel);
-    getForm.find('input[name="auth_id"]').addClass(strings.getForm.inputClass);
-
     checkForm.find('.js-auth__auth-code').html(strings.checkForm.inputLabel);
     checkForm.find('.js-auth__repeat').html(strings.checkForm.repeatMessage);
+
+    getForm.find('input[name="auth_id"]')
+        .on('keyup', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+
+                lemurro.auth.getCode();
+            }
+        })
+        .addClass(strings.getForm.inputClass);
+
+    checkForm.find('input[name="auth_code"]')
+        .on('keyup', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+
+                lemurro.auth.checkCode();
+            }
+        });
 
     authForm.find('.js-code-mask').each(function () {
         var element = $(this);
