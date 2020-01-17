@@ -1,12 +1,20 @@
 /**
  * Получение кода
  *
- * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 17.01.2020
  */
 lemurro.auth.getCode = function () {
+    var authID = $('#js-auth__get-form').find('input[name="auth_id"]').val();
+
+    if (isEmpty(authID)) {
+        swal('Внимание!', 'Необходимо указать логин', 'warning');
+
+        return;
+    }
+
     lemurro.lightajax.get(true, pathServerAPI + 'auth/code', {
-        'auth_id': $('#js-auth__get-form').find('input[name="auth_id"]').val()
+        'auth_id': authID
     }, function (result) {
         lemurro.lightajax.preloader('hide');
 

@@ -1,15 +1,30 @@
 /**
  * Проверка введенного кода
  *
- * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 17.01.2020
  */
 lemurro.auth.checkCode = function () {
     var browser = bowser.getParser(window.navigator.userAgent);
 
+    var authID   = $('#js-auth__get-form').find('input[name="auth_id"]').val();
+    var authCode = $('#js-auth__check-form').find('input[name="auth_code"]').val();
+
+    if (isEmpty(authID)) {
+        swal('Внимание!', 'Необходимо указать логин', 'warning');
+
+        return;
+    }
+
+    if (isEmpty(authCode)) {
+        swal('Внимание!', 'Необходимо указать код для входа', 'warning');
+
+        return;
+    }
+
     lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
-        'auth_id'    : $('#js-auth__get-form').find('input[name="auth_id"]').val(),
-        'auth_code'  : $('#js-auth__check-form').find('input[name="auth_code"]').val(),
+        'auth_id'    : authID,
+        'auth_code'  : authCode,
         'device_info': {
             uuid        : 'WebApp',
             platform    : browser.parsedResult.os.name,
