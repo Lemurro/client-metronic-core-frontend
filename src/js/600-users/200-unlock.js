@@ -1,12 +1,13 @@
 /**
  * Разблокировать пользователя
  *
- * @param {string} id ИД пользователя
+ * @param {string}   id       ИД пользователя
+ * @param {Function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 01.11.2019
+ * @version 21.01.2020
  */
-lemurro.users.unlock = function (id) {
+lemurro.users.unlock = function (id, callback) {
     lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/unlock', {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
@@ -19,6 +20,8 @@ lemurro.users.unlock = function (id) {
             row.html(newRecord.html());
 
             lemurro.helper.initBootstrapConfirmation(row, null);
+
+            callback(result);
         }
     });
 };

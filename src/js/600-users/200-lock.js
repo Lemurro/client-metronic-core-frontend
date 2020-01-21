@@ -1,12 +1,13 @@
 /**
  * Заблокировать пользователя
  *
- * @param {string} id ИД пользователя
+ * @param {string}   id       ИД пользователя
+ * @param {Function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 01.11.2019
+ * @version 21.01.2020
  */
-lemurro.users.lock = function (id) {
+lemurro.users.lock = function (id, callback) {
     if (id === '1') {
         swal('Внимание!', 'Блокировка пользователя с id=1 запрещена', 'warning');
     } else {
@@ -22,6 +23,8 @@ lemurro.users.lock = function (id) {
                 row.html(newRecord.html());
 
                 lemurro.helper.initBootstrapConfirmation(row, null);
+
+                callback(result);
             }
         });
     }
