@@ -4,8 +4,8 @@
  * @param {integer}  id       ИД записи
  * @param {function} callback Функция обратного вызова
  *
- * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 21.01.2020
  */
 lemurro.guide.edit = function (id, callback) {
     lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id, {}, function (result) {
@@ -26,7 +26,9 @@ lemurro.guide.edit = function (id, callback) {
 
             lemurro.tabs.tabInsertEdit('show');
 
-            callback(result);
+            if (typeof callback === 'function') {
+                callback(result);
+            }
         }
     });
 };

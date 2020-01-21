@@ -6,7 +6,7 @@
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 01.11.2019
+ * @version 21.01.2020
  */
 lemurro.users.remove = function (id, name, callback) {
     if (id === '1') {
@@ -18,7 +18,9 @@ lemurro.users.remove = function (id, name, callback) {
             if (result.hasOwnProperty('errors')) {
                 lemurro.showErrors(result.errors);
             } else {
-                callback(result);
+                if (typeof callback === 'function') {
+                    callback(result);
+                }
             }
         });
     }

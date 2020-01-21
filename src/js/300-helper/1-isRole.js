@@ -6,8 +6,8 @@
  * @param {function} callbackSuccess Функция вызова при успешном получении данных
  * @param {function} callbackFail    Функция вызова при провале
  *
- * @version 31.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 21.01.2020
  */
 lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
     var _timer = setInterval(function () {
@@ -15,7 +15,7 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
             clearInterval(_timer);
 
             if (lemurro.userinfo.admin) {
-                if (!isEmpty(callbackSuccess)) {
+                if (typeof callbackSuccess === 'function') {
                     callbackSuccess();
                 }
             } else {
@@ -28,14 +28,14 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
                         if (lemurro.userinfo.roles[page][i] === access) {
                             fail = false;
 
-                            if (!isEmpty(callbackSuccess)) {
+                            if (typeof callbackSuccess === 'function') {
                                 callbackSuccess();
                             }
                         }
                     }
                 }
 
-                if (fail && !isEmpty(callbackFail)) {
+                if (fail && typeof callbackFail === 'function') {
                     callbackFail();
                 }
             }

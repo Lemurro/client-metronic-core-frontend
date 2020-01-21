@@ -2,7 +2,7 @@
  * Разблокировать пользователя
  *
  * @param {string}   id       ИД пользователя
- * @param {Function} callback Функция обратного вызова
+ * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  * @version 21.01.2020
@@ -21,7 +21,9 @@ lemurro.users.unlock = function (id, callback) {
 
             lemurro.helper.initBootstrapConfirmation(row, null);
 
-            callback(result);
+            if (typeof callback === 'function') {
+                callback(result);
+            }
         }
     });
 };

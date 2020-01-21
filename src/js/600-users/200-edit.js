@@ -4,8 +4,8 @@
  * @param {string}   id       ИД пользователя
  * @param {function} callback Функция обратного вызова
  *
- * @version 09.08.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 21.01.2020
  */
 lemurro.users.edit = function (id, callback) {
     lemurro.lightajax.get(true, pathServerAPI + 'users/' + id, {}, function (result) {
@@ -36,7 +36,9 @@ lemurro.users.edit = function (id, callback) {
 
             lemurro.tabs.tabInsertEdit('show');
 
-            callback(result);
+            if (typeof callback === 'function') {
+                callback(result);
+            }
         }
     });
 };

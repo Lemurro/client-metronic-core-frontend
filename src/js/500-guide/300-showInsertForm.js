@@ -3,8 +3,8 @@
  *
  * @param {function} callback Функция обратного вызова
  *
- * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 21.01.2020
  */
 lemurro.guide.showInsertForm = function (callback) {
     var container = $('#js-guide-form');
@@ -20,5 +20,7 @@ lemurro.guide.showInsertForm = function (callback) {
 
     lemurro.tabs.tabInsertEdit('show');
 
-    callback();
+    if (typeof callback === 'function') {
+        callback();
+    }
 };

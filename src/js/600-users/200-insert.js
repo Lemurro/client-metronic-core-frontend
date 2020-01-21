@@ -4,8 +4,8 @@
  * @param {object}   data     Объект с данными
  * @param {function} callback Функция обратного вызова
  *
- * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 21.01.2020
  */
 lemurro.users.insert = function (data, callback) {
     lemurro.lightajax.post(true, pathServerAPI + 'users', {
@@ -16,7 +16,9 @@ lemurro.users.insert = function (data, callback) {
         if (result.hasOwnProperty('errors')) {
             lemurro.showErrors(result.errors);
         } else {
-            callback(result);
+            if (typeof callback === 'function') {
+                callback(result);
+            }
         }
     });
 };
