@@ -1,8 +1,8 @@
 /**
  * Добавление
  *
- * @version 09.08.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 21.01.2020
  */
 lemurro.accessSets.insert = function () {
     var data = lemurro.accessSets._collectData();
@@ -16,7 +16,11 @@ lemurro.accessSets.insert = function () {
             if (result.hasOwnProperty('errors')) {
                 lemurro.showErrors(result.errors);
             } else {
-                $('#js-access-sets__items').prepend(lemurro.users._templates.accessSetsItem(result.data));
+                var container = $('#js-access-sets__items');
+                container.prepend(lemurro.users._templates.accessSetsItem(result.data));
+
+                var row = container.find('tr[data-item-id="' + result.data.id + '"]');
+                lemurro.helper.initBootstrapConfirmation(row, null);
 
                 lemurro.accessSets.getData();
 

@@ -1,8 +1,8 @@
 /**
  * Список
  *
- * @version 09.08.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ * @version 21.01.2020
  */
 lemurro.accessSets.getData = function () {
     lemurro.lightajax.get(false, pathServerAPI + 'access_sets', {}, function (result) {
@@ -26,6 +26,8 @@ lemurro.accessSets.getData = function () {
 
             containerItems.html(htmlItems);
             containerSelect.find('select').html(htmlSelect);
+
+            lemurro.helper.initBootstrapConfirmation(containerItems, null);
 
             if (notEmpty(htmlSelect)) {
                 containerSelect.show();
