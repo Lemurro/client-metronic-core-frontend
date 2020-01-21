@@ -23,7 +23,7 @@ lemurro.accessSets.save = function () {
 
                 lemurro.helper.initBootstrapConfirmation(row, null);
 
-                lemurro.accessSets.getData();
+                lemurro.accessSets._buildSelect();
 
                 $('#js-access-sets-form').hide();
                 $('#js-access-sets__button-add').show();

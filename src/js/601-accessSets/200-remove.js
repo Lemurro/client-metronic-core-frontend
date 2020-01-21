@@ -16,6 +16,8 @@ lemurro.accessSets.remove = function (id) {
             $('#js-access-sets__items').find('tr[data-item-id="' + result.data.id + '"]')
                 .remove();
 
+            lemurro.accessSets._buildSelect();
+
             swal('Выполнено', 'Запись успешно удалена', 'success');
         }
     });

@@ -22,7 +22,7 @@ lemurro.accessSets.insert = function () {
                 var row = container.find('tr[data-item-id="' + result.data.id + '"]');
                 lemurro.helper.initBootstrapConfirmation(row, null);
 
-                lemurro.accessSets.getData();
+                lemurro.accessSets._buildSelect();
 
                 $('#js-access-sets-form').hide();
                 $('#js-access-sets__button-add').show();
