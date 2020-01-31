@@ -96,12 +96,32 @@
     width: 1px;
 }
 
+.w5 {
+    width: 5px;
+}
+
+.w10 {
+    width: 10px;
+}
+
+.w15 {
+    width: 15px;
+}
+
+.w20 {
+    width: 20px;
+}
+
 .hidden {
     display: none;
 }
 
 .font-100 {
     font-size: 100px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }
 .auth__logo {
     text-align: center;
