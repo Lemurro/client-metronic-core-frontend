@@ -6,7 +6,8 @@
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 17.04.2020
  */
 lemurro.guide.remove = function (id, name, callback) {
     lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (result) {
@@ -17,6 +18,17 @@ lemurro.guide.remove = function (id, name, callback) {
         } else {
             if (typeof callback === 'function') {
                 callback(result);
+            } else {
+                var container = $('#js-guide__items');
+
+                container.find('tr[data-item-id="' + result.data.id + '"]').remove();
+
+                if (container.find('tr').length === 0) {
+                    $('#js-guide__empty').show();
+                    $('#js-guide__list').hide();
+                }
+
+                swal('Выполнено', 'Запись успешно удалена', 'success');
             }
         }
     });
