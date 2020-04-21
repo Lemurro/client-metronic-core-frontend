@@ -2,7 +2,8 @@
  * Инициализация ядра
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 17.01.2020
+ *
+ * @version 21.04.2020
  */
 lemurro.init = function () {
     /**
@@ -22,13 +23,15 @@ lemurro.init = function () {
     /**
      * Инициализируем плагин LightAjax
      *
-     * @type {object}
+     * @type {LightAjax}
      */
     lemurro.lightajax = new LightAjax({
-        callbackAlert: function (title, message) {
-            swal(title, message, 'error');
+        settings: {
+            callbackAlert: function (title, message) {
+                swal(title, message, 'error');
+            }
         },
-        ajax         : {
+        ajax    : {
             beforeSend: function (xhr, settings) {
                 if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
                     xhr.setRequestHeader('X-SESSION-ID', lemurro.sessionID);

@@ -22,7 +22,7 @@
     "bootstrap-confirmation2": "~4.1.0",
     "bowser": "~2.4.0",
     "dimns-is-empty-js": "~1.2.1",
-    "jquery-lightajax": "~1.0.1",
+    "jquery-lightajax": "~2.2.3",
     "jquery-tablefilter": "~1.1.1",
     "localforage": "~1.7.3",
     "navigo": "~7.1.2",
