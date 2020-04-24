@@ -2,11 +2,10 @@
  * Проверка введенного кода
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 17.01.2020
+ *
+ * @version 21.04.2020
  */
 lemurro.auth.checkCode = function () {
-    var browser = bowser.getParser(window.navigator.userAgent);
-
     var authID   = $('#js-auth__get-form').find('input[name="auth_id"]').val();
     var authCode = $('#js-auth__check-form').find('input[name="auth_code"]').val();
 
@@ -22,29 +21,52 @@ lemurro.auth.checkCode = function () {
         return;
     }
 
-    lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
-        'auth_id'    : authID,
-        'auth_code'  : authCode,
-        'device_info': {
-            uuid        : 'WebApp',
-            platform    : browser.parsedResult.os.name,
-            version     : browser.parsedResult.os.version,
-            manufacturer: browser.parsedResult.browser.name,
-            model       : browser.parsedResult.browser.version
-        }
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    var browser     = bowser.getParser(window.navigator.userAgent);
+    var geoip       = {};
+    var waiterCount = 1;
 
-        if (result.hasOwnProperty('errors')) {
-            $('#js-auth__check-form').find('input[name="auth_code"]').val('');
-
-            lemurro.showErrors(result.errors);
-        } else {
-            localforage.setItem('sessionID', result.data.session, function () {
-                lemurro.sessionID = result.data.session;
-                lemurro.authScreen('hide');
-                lemurro.auth.check();
-            });
+    new LightAjax(null).get(false, 'https://api.sypexgeo.net', {}, function (result) {
+        geoip = result;
+    }, {
+        complete: function () {
+            waiterCount = 0;
+        },
+        error   : function () {
         }
     });
+
+    var waiter = setInterval(function () {
+        if (waiterCount === 0) {
+            clearInterval(waiter);
+
+            console.log(geoip);
+
+            lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
+                auth_id    : authID,
+                auth_code  : authCode,
+                device_info: {
+                    uuid        : 'WebApp',
+                    platform    : browser.parsedResult.os.name,
+                    version     : browser.parsedResult.os.version,
+                    manufacturer: browser.parsedResult.browser.name,
+                    model       : browser.parsedResult.browser.version
+                },
+                geoip      : geoip
+            }, function (result) {
+                lemurro.lightajax.preloader('hide');
+
+                if (result.hasOwnProperty('errors')) {
+                    $('#js-auth__check-form').find('input[name="auth_code"]').val('');
+
+                    lemurro.showErrors(result.errors);
+                } else {
+                    localforage.setItem('sessionID', result.data.session, function () {
+                        lemurro.sessionID = result.data.session;
+                        lemurro.authScreen('hide');
+                        lemurro.auth.check();
+                    });
+                }
+            });
+        }
+    }, 500);
 };
