@@ -16,7 +16,8 @@
     "gulp-concat": "^2.6.0",
     "gulp-rename": "^1.4.0",
     "gulp-sort": "^2.0.0",
-    "gulp-uglify": "^1.5.4"
+    "gulp-uglify": "^1.5.4",
+    "qunit": "^2.9.3"
   },
   "dependencies": {
     "bootstrap-confirmation2": "~4.1.0",
