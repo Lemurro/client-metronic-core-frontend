@@ -11,11 +11,11 @@
  * @version 27.04.2020
  */
 lemurro.helper.decimal = function (value, precision) {
-    if (value === undefined) {
+    if (isEmpty(value)) {
         return 0;
     }
 
-    if (precision === undefined || typeof precision !== 'number') {
+    if (typeof precision !== 'number' || isNaN(precision)) {
         precision = 2;
     }
 
