@@ -6,8 +6,9 @@
  *
  * @return {float}
  *
- * @version 07.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 27.04.2020
  */
 lemurro.helper.decimal = function (value, precision) {
     if (value === undefined) {
@@ -18,9 +19,7 @@ lemurro.helper.decimal = function (value, precision) {
         precision = 2;
     }
 
-    if (typeof value === 'number') {
-        return parseFloat(value.toFixed(precision));
-    } else {
+    if (typeof value !== 'number') {
         value = value.replace(/ /g, '');
         value = value.replace(/,/g, '.');
 
@@ -29,7 +28,7 @@ lemurro.helper.decimal = function (value, precision) {
         if (isNaN(value)) {
             return 0;
         }
-
-        return parseFloat(value.toFixed(precision));
     }
+
+    return parseFloat(value.toFixed(precision));
 };
