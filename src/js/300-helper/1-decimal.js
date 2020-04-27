@@ -1,10 +1,10 @@
 /**
  * Преобразование строки в дробное число
  *
- * @param {string|float} value     Строка с дробным числом или число
- * @param {integer}      precision Точность результата (по умолчанию: 2)
+ * @param {string|number} value     Строка с дробным числом или число
+ * @param {number}        precision Точность результата (по умолчанию: 2)
  *
- * @return {float}
+ * @return {number}
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
@@ -28,6 +28,10 @@ lemurro.helper.decimal = function (value, precision) {
         if (isNaN(value)) {
             return 0;
         }
+    }
+
+    if (precision === -1) {
+        return value;
     }
 
     return parseFloat(value.toFixed(precision));
