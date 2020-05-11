@@ -1,13 +1,8 @@
 /**
  * Операции с табами
  *
- * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
  *
- * @type {object}
+ * @version 11.05.2020
  */
 lemurro.tabs = {};
