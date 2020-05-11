@@ -1,16 +1,15 @@
 /**
  * Отобразим список пользователей
  *
- * @param {Object}   data
- * @param {function} callback
+ * @param {Object} data
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
  * @version 17.04.2020
  */
-lemurro.users.showData = function (data, callback) {
+lemurro.users.showData = function (data) {
     var container = $('#js-users__items');
-    var html      = '';
+    var html = '';
 
     for (var i in data.items) {
         if (data.items.hasOwnProperty(i)) {
