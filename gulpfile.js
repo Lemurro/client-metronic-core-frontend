@@ -1,20 +1,20 @@
-var gulp     = require('gulp');           // Сам Gulp JS
-var cleanCSS = require('gulp-clean-css'); // Минификация CSS
-var concat   = require('gulp-concat');    // Склейка файлов
-var rename   = require('gulp-rename');    // Переименование файлов
-var sort     = require('gulp-sort');      // Сортировка списка файлов
-var uglify   = require('gulp-uglify');    // Минификация JS
-var del      = require('del');            // Удаление файлов
+const gulp     = require('gulp');           // Сам Gulp JS
+const cleanCSS = require('gulp-clean-css'); // Минификация CSS
+const concat   = require('gulp-concat');    // Склейка файлов
+const rename   = require('gulp-rename');    // Переименование файлов
+const sort     = require('gulp-sort');      // Сортировка списка файлов
+const uglify   = require('gulp-uglify');    // Минификация JS
+const del      = require('del');            // Удаление файлов
 
-var cssLibs = [
+const cssLibs = [
     'node_modules/jquery-lightajax/dist/jquery.lightajax.css'
 ];
 
-var cssLibsMin = [
+const cssLibsMin = [
     'node_modules/jquery-lightajax/dist/jquery.lightajax.min.css'
 ];
 
-var jsLibs = [
+const jsLibs = [
     'node_modules/bootstrap-confirmation2/dist/bootstrap-confirmation.js',
     'node_modules/bowser/bundled.js',
     'node_modules/dimns-is-empty-js/dist/isEmpty.js',
@@ -27,7 +27,7 @@ var jsLibs = [
     'node_modules/template7/dist/template7.js'
 ];
 
-var jsLibsMin = [
+const jsLibsMin = [
     'node_modules/bootstrap-confirmation2/dist/bootstrap-confirmation.min.js',
     'node_modules/bowser/bundled.js',
     'node_modules/dimns-is-empty-js/dist/isEmpty.min.js',
@@ -43,7 +43,7 @@ var jsLibsMin = [
 // CLEAN
 
 function clean() {
-    var files = [
+    const files = [
         'dist/core.css',
         'dist/core.min.css',
         'dist/core.js',
