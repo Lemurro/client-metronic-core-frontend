@@ -2,14 +2,13 @@
  * Удаление записи
  *
  * @param {integer}  id       ИД записи
- * @param {string}   name     Имя записи
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 17.04.2020
+ * @version 11.05.2020
  */
-lemurro.guide.remove = function (id, name, callback) {
+lemurro.guide.remove = function (id, callback) {
     lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
