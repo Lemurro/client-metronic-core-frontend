@@ -2,13 +2,14 @@
  * Список элементов справочника
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 01.11.2019
+ *
+ * @version 19.06.2020
  */
 lemurro.guide._getData = function () {
     lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             $('#js-guide__loader').hide();
@@ -17,7 +18,7 @@ lemurro.guide._getData = function () {
                 $('#js-guide__empty').show();
             } else {
                 var container = $('#js-guide__items');
-                var html      = '';
+                var html = '';
 
                 for (var i in result.data.items) {
                     if (result.data.items.hasOwnProperty(i)) {
@@ -32,10 +33,8 @@ lemurro.guide._getData = function () {
             }
 
             if (
-                !isEmpty(lemurro.guide._class)
-                &&
-                window.hasOwnProperty(lemurro.guide._class)
-                &&
+                !isEmpty(lemurro.guide._class) &&
+                window.hasOwnProperty(lemurro.guide._class) &&
                 window[lemurro.guide._class].hasOwnProperty('init')
             ) {
                 window[lemurro.guide._class].init();

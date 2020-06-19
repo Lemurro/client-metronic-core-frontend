@@ -5,13 +5,14 @@
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.guide.edit = function (id, callback) {
     lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             var container = $('#js-guide-form');

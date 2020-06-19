@@ -6,13 +6,15 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 11.05.2020
+ * @version 19.06.2020
  */
 lemurro.guide.remove = function (id, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (result) {
+    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (
+        result
+    ) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             if (typeof callback === 'function') {

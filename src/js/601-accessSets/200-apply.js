@@ -1,8 +1,9 @@
 /**
  * Применим выбранный набор
  *
- * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
  */
 lemurro.accessSets.apply = function () {
     var select = $('#js-user__access-sets').find('select');
@@ -12,7 +13,7 @@ lemurro.accessSets.apply = function () {
         lemurro.lightajax.get(true, pathServerAPI + 'access_sets/' + id, {}, function (result) {
             lemurro.lightajax.preloader('hide');
 
-            if (result.hasOwnProperty('errors')) {
+            if (lemurro.hasErrors(result)) {
                 lemurro.showErrors(result.errors);
             } else {
                 lemurro.users.setRoles($('#js-user-form'), result.data.roles);

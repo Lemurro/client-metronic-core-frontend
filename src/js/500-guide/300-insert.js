@@ -6,31 +6,36 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 17.04.2020
+ * @version 19.06.2020
  */
 lemurro.guide.insert = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name, {
-        data: data
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'guide/' + lemurro.guide._name,
+        {
+            data: data,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            if (typeof callback === 'function') {
-                callback(result);
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
             } else {
-                var container = $('#js-guide__items');
-                container.prepend(lemurro.guide._templates.item(result.data));
+                if (typeof callback === 'function') {
+                    callback(result);
+                } else {
+                    var container = $('#js-guide__items');
+                    container.prepend(lemurro.guide._templates.item(result.data));
 
-                var row = container.find('tr[data-item-id="' + result.data.id + '"]');
-                lemurro.helper.initBootstrapConfirmation(row, null);
+                    var row = container.find('tr[data-item-id="' + result.data.id + '"]');
+                    lemurro.helper.initBootstrapConfirmation(row, null);
 
-                $('#js-guide__empty').hide();
-                $('#js-guide__list').show();
+                    $('#js-guide__empty').hide();
+                    $('#js-guide__list').show();
 
-                lemurro.tabs.tabInsertEdit('hide');
+                    lemurro.tabs.tabInsertEdit('hide');
+                }
             }
         }
-    });
+    );
 };

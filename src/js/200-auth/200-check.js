@@ -1,12 +1,13 @@
 /**
  * Проверка сессии
  *
- * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
  */
 lemurro.auth.check = function () {
     lemurro.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.lightajax.preloader('hide');
 
             lemurro.showErrors(result.errors);

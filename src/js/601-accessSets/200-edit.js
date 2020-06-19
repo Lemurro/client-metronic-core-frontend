@@ -3,14 +3,15 @@
  *
  * @param {string} id ИД набора
  *
- * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
  */
 lemurro.accessSets.edit = function (id) {
     lemurro.lightajax.get(true, pathServerAPI + 'access_sets/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             var container = $('#js-access-sets-form');
