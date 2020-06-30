@@ -670,11 +670,19 @@
      *
      * @param {object} options Параметры
      *
-     * @version 20.03.2018
-     * @author DimNS <atomcms@ya.ru>
+     * @version 21.04.2020
+     * @author  DimNS <atomcms@ya.ru>
      */
     function LightAjax(options) {
-        if (typeof(options) === 'undefined') {
+        if (typeof options === 'object' && options !== null) {
+            if (!options.hasOwnProperty('ajax')) {
+                options.ajax = {};
+            }
+
+            if (!options.hasOwnProperty('settings')) {
+                options.settings = {};
+            }
+        } else {
             options = {
                 ajax    : {},
                 settings: {}
@@ -682,27 +690,28 @@
         }
 
         // Настройки по-умолчанию, расширяя их с помощью параметров, которые были переданы
-        $.ajaxSetup(Object.assign({
+        LightAjax.prototype._optionsDefault = Object.assign({
             crossDomain: true,
             timeout    : 20000,
             dataType   : 'json',
             cache      : false
-        }, options.ajax));
+        }, options.ajax);
 
         var settings = Object.assign({
-            color: '#fff'
+            classColor   : '',
+            callbackAlert: function (title, message) {
+                alert(message, title);
+            }
         }, options.settings);
 
-        if (options.hasOwnProperty('callbackAlert')) {
-            LightAjax.prototype._callbackAlert = options.callbackAlert;
-        }
+        LightAjax.prototype._callbackAlert = settings.callbackAlert;
 
         // Создаем html-код
-        if ($('#js-lightajax-preloader').length === 0) {
-            $('body').append(
+        if (jQuery('#js-lightajax-preloader').length === 0) {
+            jQuery('body').append(
                 '<div id="js-lightajax-overlay" class="lightajax__overlay"></div>' +
                 '<div id="js-lightajax-preloader" class="lightajax__preloader">' +
-                '<div class="lightajax__loader" style="color: ' + settings.color + ';"></div>' +
+                '<div class="lightajax__loader ' + settings.classColor + '"></div>' +
                 '</div>'
             );
         }
@@ -722,14 +731,14 @@
      *
      * @param {string} action Действие (show|hide)
      *
-     * @version 20.03.2018
-     * @author Дмитрий Щербаков <atomcms@ya.ru>
+     * @version 29.05.2019
+     * @author  Дмитрий Щербаков <atomcms@ya.ru>
      */
     LightAjax.prototype.preloader = function (action) {
         if (action === 'show') {
-            $('#js-lightajax-overlay, #js-lightajax-preloader').show();
+            jQuery('#js-lightajax-overlay, #js-lightajax-preloader').show();
         } else if (action === 'hide') {
-            $('#js-lightajax-overlay, #js-lightajax-preloader').hide();
+            jQuery('#js-lightajax-overlay, #js-lightajax-preloader').hide();
         }
     };
 
@@ -749,12 +758,13 @@
      * @param {string}   url       Адрес запроса
      * @param {object}   data      Объект параметров для запроса
      * @param {function} success   Действие при успешном завершении
+     * @param {object}   options   Переопределение настроек по умолчанию
      *
-     * @version 20.03.2018
-     * @author Дмитрий Щербаков <atomcms@ya.ru>
+     * @version 10.10.2019
+     * @author  Дмитрий Щербаков <atomcms@ya.ru>
      */
-    LightAjax.prototype.get = function (preloader, url, data, success) {
-        LightAjax.prototype._query('GET', preloader, url, data, success);
+    LightAjax.prototype.get = function (preloader, url, data, success, options) {
+        LightAjax.prototype._query('GET', preloader, url, data, success, options);
     };
 
     // d8888b.  .d88b.  .d8888. d888888b
@@ -773,12 +783,13 @@
      * @param {string}   url       Адрес запроса
      * @param {object}   data      Объект параметров для запроса
      * @param {function} success   Действие при успешном завершении
+     * @param {object}   options   Переопределение настроек по умолчанию
      *
-     * @version 20.03.2018
-     * @author Дмитрий Щербаков <atomcms@ya.ru>
+     * @version 10.10.2019
+     * @author  Дмитрий Щербаков <atomcms@ya.ru>
      */
-    LightAjax.prototype.post = function (preloader, url, data, success) {
-        LightAjax.prototype._query('POST', preloader, url, data, success);
+    LightAjax.prototype.post = function (preloader, url, data, success, options) {
+        LightAjax.prototype._query('POST', preloader, url, data, success, options);
     };
 
     //          .d88b.  db    db d88888b d8888b. db    db
@@ -798,17 +809,21 @@
      * @param {string}   url       Адрес запроса
      * @param {object}   data      Объект параметров для запроса
      * @param {function} success   Действие при успешном завершении
+     * @param {object}   options   Переопределение настроек по умолчанию
      *
-     * @version 20.03.2018
-     * @author Дмитрий Щербаков <atomcms@ya.ru>
+     * @version 21.04.2020
+     * @author  Дмитрий Щербаков <atomcms@ya.ru>
      */
-    LightAjax.prototype._query = function (type, preloader, url, data, success) {
+    LightAjax.prototype._query = function (type, preloader, url, data, success, options) {
         if (preloader) {
             LightAjax.prototype.preloader('show');
         }
 
-        $.ajax({
-            url    : url,
+        if (typeof options !== 'object') {
+            options = {};
+        }
+
+        var settings = Object.assign({}, LightAjax.prototype._optionsDefault, {
             method : type,
             data   : data,
             success: success,
@@ -819,22 +834,9 @@
 
                 LightAjax.prototype._error(status);
             }
-        });
-    };
+        }, options);
 
-    //_callbackAlert
-
-    /**
-     * Вывести ошибку на экран
-     *
-     * @param {string} title   Заголовок сообщения
-     * @param {string} message Текст сообщения
-     *
-     * @version 20.03.2018
-     * @author Дмитрий Щербаков <atomcms@ya.ru>
-     */
-    LightAjax.prototype._callbackAlert = function (title, message) {
-        alert(message, title);
+        jQuery.ajax(url, settings);
     };
 
     //         d88888b d8888b. d8888b.  .d88b.  d8888b.
@@ -852,7 +854,7 @@
      * @param {string} status Код ошибки
      *
      * @version 20.03.2018
-     * @author Дмитрий Щербаков <atomcms@ya.ru>
+     * @author  Дмитрий Щербаков <atomcms@ya.ru>
      */
     LightAjax.prototype._error = function (status) {
         var message = 'Неизвестная ошибка (' + status + ')';
@@ -920,7 +922,7 @@
 })(jQuery);
 /*!
     localForage -- Offline Storage, Improved
-    Version 1.7.3
+    Version 1.7.4
     https://localforage.github.io/localForage
     (c) 2013-2017 Mozilla, Apache License 2.0
 */
@@ -1296,7 +1298,7 @@ function isIndexedDBValid() {
     try {
         // Initialize IndexedDB; fall back to vendor-prefixed versions
         // if needed.
-        if (!idb) {
+        if (!idb || !idb.open) {
             return false;
         }
         // We mimic PouchDB here;
@@ -1307,8 +1309,12 @@ function isIndexedDBValid() {
 
         var hasFetch = typeof fetch === 'function' && fetch.toString().indexOf('[native code') !== -1;
 
-        // Safari <10.1 does not meet our requirements for IDB support (#5572)
-        // since Safari 10.1 shipped with fetch, we can use that to detect it
+        // Safari <10.1 does not meet our requirements for IDB support
+        // (see: https://github.com/pouchdb/pouchdb/issues/5572).
+        // Safari 10.1 shipped with fetch, we can use that to detect it.
+        // Note: this creates issues with `window.fetch` polyfills and
+        // overrides; see:
+        // https://github.com/localForage/localForage/issues/856
         return (!isSafari || hasFetch) && typeof indexedDB !== 'undefined' &&
         // some outdated implementations of IDB that appear on Samsung
         // and HTC Android devices <4.4 are missing IDBKeyRange
@@ -1894,7 +1900,7 @@ function iterate(iterator, callback) {
                             }
                             var result = iterator(value, cursor.key, iterationNumber++);
 
-                            // when the iterator callback retuns any
+                            // when the iterator callback returns any
                             // (non-`undefined`) value, then we stop
                             // the iteration immediately
                             if (result !== void 0) {
@@ -2116,7 +2122,7 @@ function key(n, callback) {
                 try {
                     var store = transaction.objectStore(self._dbInfo.storeName);
                     var advanced = false;
-                    var req = store.openCursor();
+                    var req = store.openKeyCursor();
 
                     req.onsuccess = function () {
                         var cursor = req.result;
@@ -2170,7 +2176,7 @@ function keys(callback) {
 
                 try {
                     var store = transaction.objectStore(self._dbInfo.storeName);
-                    var req = store.openCursor();
+                    var req = store.openKeyCursor();
                     var keys = [];
 
                     req.onsuccess = function () {
@@ -4186,7 +4192,7 @@ return Navigo;
 
 })));
 
-/*! Select2 4.0.10 | https://github.com/select2/select2/blob/master/LICENSE.md */
+/*! Select2 4.0.13 | https://github.com/select2/select2/blob/master/LICENSE.md */
 
 !function(){if(jQuery&&jQuery.fn&&jQuery.fn.select2&&jQuery.fn.select2.amd)var n=jQuery.fn.select2.amd;n.define("select2/i18n/ru",[],function(){function n(n,e,r,u){return n%10<5&&n%10>0&&n%100<5||n%100>20?n%10>1?r:e:u}return{errorLoading:function(){return"Невозможно загрузить результаты"},inputTooLong:function(e){var r=e.input.length-e.maximum,u="Пожалуйста, введите на "+r+" символ";return u+=n(r,"","a","ов"),u+=" меньше"},inputTooShort:function(e){var r=e.minimum-e.input.length,u="Пожалуйста, введите ещё хотя бы "+r+" символ";return u+=n(r,"","a","ов")},loadingMore:function(){return"Загрузка данных…"},maximumSelected:function(e){var r="Вы можете выбрать не более "+e.maximum+" элемент";return r+=n(e.maximum,"","a","ов")},noResults:function(){return"Совпадений не найдено"},searching:function(){return"Поиск…"},removeAllItems:function(){return"Удалить все элементы"}}}),n.define,n.require}();
 /**
@@ -7139,14 +7145,9 @@ return ss;
 /**
  * Загрузочный скрипт приложения
  *
- * @version 27.11.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект главного скрипта
  *
- * @type {object}
+ * @version 11.05.2020
  */
 var lemurro = {};
 /**
@@ -7183,7 +7184,8 @@ lemurro.start = function () {
  * Инициализация ядра
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 17.01.2020
+ *
+ * @version 21.04.2020
  */
 lemurro.init = function () {
     /**
@@ -7203,13 +7205,15 @@ lemurro.init = function () {
     /**
      * Инициализируем плагин LightAjax
      *
-     * @type {object}
+     * @type {LightAjax}
      */
     lemurro.lightajax = new LightAjax({
-        callbackAlert: function (title, message) {
-            swal(title, message, 'error');
+        settings: {
+            callbackAlert: function (title, message) {
+                swal(title, message, 'error');
+            }
         },
-        ajax         : {
+        ajax    : {
             beforeSend: function (xhr, settings) {
                 if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
                     xhr.setRequestHeader('X-SESSION-ID', lemurro.sessionID);
@@ -7505,6 +7509,25 @@ lemurro.authScreen = function (action) {
     }
 };
 /**
+ * Проверка на наличие ошибки
+ *
+ * @param {array} result Массив ответа
+ *
+ * @return {boolean}
+ *
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
+ */
+lemurro.hasErrors = function (result) {
+    if (result.hasOwnProperty('errors')) {
+        return true;
+    }
+
+    return false;
+};
+
+/**
  * Отображение ошибок
  *
  * @param {array} errors Массив ошибок
@@ -7569,14 +7592,9 @@ lemurro._showError = function (errCode, errTitle) {
 /**
  * Проверка сессии при запуске приложения
  *
- * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
  *
- * @type {object}
+ * @version 11.05.2020
  */
 lemurro.auth = {};
 
@@ -7584,31 +7602,29 @@ lemurro.auth = {};
  * ИД таймера
  *
  * @type {int|null}
- *
- * @public
  */
 lemurro.auth._timerID = null;
+
 /**
  * Получим информацию о пользователе
  *
- * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
  */
 lemurro.auth._getUser = function () {
     lemurro.lightajax.get(false, pathServerAPI + 'user', {}, function (result) {
-        if (result.hasOwnProperty('errors')) {
-            lemurro.lightajax.preloader('hide');
+        lemurro.lightajax.preloader('hide');
 
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
-            lemurro.lightajax.preloader('hide');
-
             lemurro.userinfo = result.data;
-
             lemurro.auth._success();
         }
     });
 };
+
 /**
  * Запуск таймера
  *
@@ -7656,12 +7672,13 @@ lemurro.auth._success = function () {
 /**
  * Проверка сессии
  *
- * @version 21.02.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
  */
 lemurro.auth.check = function () {
     lemurro.lightajax.get(true, pathServerAPI + 'auth/check', {}, function (result) {
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.lightajax.preloader('hide');
 
             lemurro.showErrors(result.errors);
@@ -7670,16 +7687,16 @@ lemurro.auth.check = function () {
         }
     });
 };
+
 /**
  * Проверка введенного кода
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 17.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.auth.checkCode = function () {
-    var browser = bowser.getParser(window.navigator.userAgent);
-
-    var authID   = $('#js-auth__get-form').find('input[name="auth_id"]').val();
+    var authID = $('#js-auth__get-form').find('input[name="auth_id"]').val();
     var authCode = $('#js-auth__check-form').find('input[name="auth_code"]').val();
 
     if (isEmpty(authID)) {
@@ -7694,37 +7711,72 @@ lemurro.auth.checkCode = function () {
         return;
     }
 
-    lemurro.lightajax.post(true, pathServerAPI + 'auth/code', {
-        'auth_id'    : authID,
-        'auth_code'  : authCode,
-        'device_info': {
-            uuid        : 'WebApp',
-            platform    : browser.parsedResult.os.name,
-            version     : browser.parsedResult.os.version,
-            manufacturer: browser.parsedResult.browser.name,
-            model       : browser.parsedResult.browser.version
-        }
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    var browser = bowser.getParser(window.navigator.userAgent);
+    var geoip = {};
+    var waiterCount = 1;
 
-        if (result.hasOwnProperty('errors')) {
-            $('#js-auth__check-form').find('input[name="auth_code"]').val('');
-
-            lemurro.showErrors(result.errors);
-        } else {
-            localforage.setItem('sessionID', result.data.session, function () {
-                lemurro.sessionID = result.data.session;
-                lemurro.authScreen('hide');
-                lemurro.auth.check();
-            });
+    new LightAjax(null).get(
+        false,
+        'https://api.sypexgeo.net',
+        {},
+        function (result) {
+            geoip = result;
+        },
+        {
+            complete: function () {
+                waiterCount = 0;
+            },
+            error: function () {},
         }
-    });
+    );
+
+    var waiter = setInterval(function () {
+        if (waiterCount === 0) {
+            clearInterval(waiter);
+
+            console.log(geoip);
+
+            lemurro.lightajax.post(
+                true,
+                pathServerAPI + 'auth/code',
+                {
+                    auth_id: authID,
+                    auth_code: authCode,
+                    device_info: {
+                        uuid: 'WebApp',
+                        platform: browser.parsedResult.os.name,
+                        version: browser.parsedResult.os.version,
+                        manufacturer: browser.parsedResult.browser.name,
+                        model: browser.parsedResult.browser.version,
+                    },
+                    geoip: geoip,
+                },
+                function (result) {
+                    lemurro.lightajax.preloader('hide');
+
+                    if (lemurro.hasErrors(result)) {
+                        $('#js-auth__check-form').find('input[name="auth_code"]').val('');
+
+                        lemurro.showErrors(result.errors);
+                    } else {
+                        localforage.setItem('sessionID', result.data.session, function () {
+                            lemurro.sessionID = result.data.session;
+                            lemurro.authScreen('hide');
+                            lemurro.auth.check();
+                        });
+                    }
+                }
+            );
+        }
+    }, 500);
 };
+
 /**
  * Получение кода
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 17.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.auth.getCode = function () {
     var authID = $('#js-auth__get-form').find('input[name="auth_id"]').val();
@@ -7735,31 +7787,37 @@ lemurro.auth.getCode = function () {
         return;
     }
 
-    lemurro.lightajax.get(true, pathServerAPI + 'auth/code', {
-        'auth_id': authID
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    lemurro.lightajax.get(
+        true,
+        pathServerAPI + 'auth/code',
+        {
+            auth_id: authID,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            if (result.data.hasOwnProperty('message')) {
-                console.log(result.data.message, 'AuthCode');
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
+            } else {
+                if (result.data.hasOwnProperty('message')) {
+                    console.log(result.data.message, 'AuthCode');
+                }
+
+                var formCode = $('#js-auth__check-form');
+
+                formCode.find('.js-timer').show();
+                formCode.find('.js-timer__count').text('60');
+                formCode.find('.js-resend').hide();
+
+                lemurro.auth._runTimer();
+
+                $('#js-auth__get-form').hide();
+                formCode.show();
             }
-
-            var formCode = $('#js-auth__check-form');
-
-            formCode.find('.js-timer').show();
-            formCode.find('.js-timer__count').text('60');
-            formCode.find('.js-resend').hide();
-
-            lemurro.auth._runTimer();
-
-            $('#js-auth__get-form').hide();
-            formCode.show();
         }
-    });
+    );
 };
+
 /**
  * Сброс сессии
  *
@@ -7777,14 +7835,9 @@ lemurro.auth.logout = function () {
 /**
  * Хелперы
  *
- * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
  *
- * @type {object}
+ * @version 11.05.2020
  */
 lemurro.helper = {};
 /**
@@ -7829,26 +7882,25 @@ lemurro.helper.clearString = function (str) {
 /**
  * Преобразование строки в дробное число
  *
- * @param {string|float} value     Строка с дробным числом или число
- * @param {integer}      precision Точность результата (по умолчанию: 2)
+ * @param {string|number} value     Строка с дробным числом или число
+ * @param {number}        precision Точность результата (по умолчанию: 2)
  *
- * @return {float}
+ * @return {number}
  *
- * @version 07.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 27.04.2020
  */
 lemurro.helper.decimal = function (value, precision) {
-    if (value === undefined) {
+    if (isEmpty(value)) {
         return 0;
     }
 
-    if (precision === undefined || typeof precision !== 'number') {
+    if (typeof precision !== 'number' || isNaN(precision)) {
         precision = 2;
     }
 
-    if (typeof value === 'number') {
-        return parseFloat(value.toFixed(precision));
-    } else {
+    if (typeof value !== 'number') {
         value = value.replace(/ /g, '');
         value = value.replace(/,/g, '.');
 
@@ -7857,9 +7909,13 @@ lemurro.helper.decimal = function (value, precision) {
         if (isNaN(value)) {
             return 0;
         }
-
-        return parseFloat(value.toFixed(precision));
     }
+
+    if (precision === -1) {
+        return value;
+    }
+
+    return parseFloat(value.toFixed(precision));
 };
 /**
  * Подключим BootstrapConfirmation
@@ -7995,14 +8051,9 @@ lemurro.helper.showConfirm = function (title, content, confirmButtonText, cancel
 /**
  * Операции с табами
  *
- * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
  *
- * @type {object}
+ * @version 11.05.2020
  */
 lemurro.tabs = {};
 /**
@@ -8048,14 +8099,9 @@ lemurro.tabs.tabInsertEdit = function (action) {
 /**
  * Операции со справочниками
  *
- * @version 06.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
  *
- * @type {object}
+ * @version 11.05.2020
  */
 lemurro.guide = {};
 /**
@@ -8096,13 +8142,14 @@ lemurro.guide.init = function (pageName, jsClass) {
  * Список элементов справочника
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 01.11.2019
+ *
+ * @version 19.06.2020
  */
 lemurro.guide._getData = function () {
     lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             $('#js-guide__loader').hide();
@@ -8111,7 +8158,7 @@ lemurro.guide._getData = function () {
                 $('#js-guide__empty').show();
             } else {
                 var container = $('#js-guide__items');
-                var html      = '';
+                var html = '';
 
                 for (var i in result.data.items) {
                     if (result.data.items.hasOwnProperty(i)) {
@@ -8126,10 +8173,8 @@ lemurro.guide._getData = function () {
             }
 
             if (
-                !isEmpty(lemurro.guide._class)
-                &&
-                window.hasOwnProperty(lemurro.guide._class)
-                &&
+                !isEmpty(lemurro.guide._class) &&
+                window.hasOwnProperty(lemurro.guide._class) &&
                 window[lemurro.guide._class].hasOwnProperty('init')
             ) {
                 window[lemurro.guide._class].init();
@@ -8137,6 +8182,7 @@ lemurro.guide._getData = function () {
         }
     });
 };
+
 /**
  * Загрузка справочника
  *
@@ -8182,13 +8228,14 @@ lemurro.guide._load = function () {
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.guide.edit = function (id, callback) {
     lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             var container = $('#js-guide-form');
@@ -8209,6 +8256,7 @@ lemurro.guide.edit = function (id, callback) {
         }
     });
 };
+
 /**
  * Добавление записи
  *
@@ -8216,46 +8264,78 @@ lemurro.guide.edit = function (id, callback) {
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.guide.insert = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name, {
-        data: data
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'guide/' + lemurro.guide._name,
+        {
+            data: data,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            if (typeof callback === 'function') {
-                callback(result);
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
+            } else {
+                if (typeof callback === 'function') {
+                    callback(result);
+                } else {
+                    var container = $('#js-guide__items');
+                    container.prepend(lemurro.guide._templates.item(result.data));
+
+                    var row = container.find('tr[data-item-id="' + result.data.id + '"]');
+                    lemurro.helper.initBootstrapConfirmation(row, null);
+
+                    $('#js-guide__empty').hide();
+                    $('#js-guide__list').show();
+
+                    lemurro.tabs.tabInsertEdit('hide');
+                }
             }
         }
-    });
+    );
 };
+
 /**
  * Удаление записи
  *
  * @param {integer}  id       ИД записи
- * @param {string}   name     Имя записи
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
-lemurro.guide.remove = function (id, name, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (result) {
+lemurro.guide.remove = function (id, callback) {
+    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id + '/remove', {}, function (
+        result
+    ) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             if (typeof callback === 'function') {
                 callback(result);
+            } else {
+                var container = $('#js-guide__items');
+
+                container.find('tr[data-item-id="' + result.data.id + '"]').remove();
+
+                if (container.find('tr').length === 0) {
+                    $('#js-guide__empty').show();
+                    $('#js-guide__list').hide();
+                }
+
+                swal('Выполнено', 'Запись успешно удалена', 'success');
             }
         }
     });
 };
+
 /**
  * Изменение записи
  *
@@ -8263,23 +8343,41 @@ lemurro.guide.remove = function (id, name, callback) {
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.guide.save = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + data.id, {
-        data: data
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'guide/' + lemurro.guide._name + '/' + data.id,
+        {
+            data: data,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            if (typeof callback === 'function') {
-                callback(result);
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
+            } else {
+                if (typeof callback === 'function') {
+                    callback(result);
+                } else {
+                    var newRecord = $(lemurro.guide._templates.item(result.data));
+                    var row = $('#js-guide__items').find('tr[data-item-id="' + result.data.id + '"]');
+
+                    row.html(newRecord.html());
+
+                    lemurro.helper.initBootstrapConfirmation(row, null);
+
+                    lemurro.tabs.tabInsertEdit('hide');
+
+                    swal('Выполнено', 'Запись успешно изменена', 'success');
+                }
             }
         }
-    });
+    );
 };
+
 /**
  * Покажем форму добавления
  *
@@ -8309,17 +8407,11 @@ lemurro.guide.showInsertForm = function (callback) {
 /**
  * Работа с пользователями
  *
- * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
  *
- * @type {object}
+ * @version 11.05.2020
  */
 lemurro.users = {};
-
 /**
  * Инициализация
  *
@@ -8495,38 +8587,47 @@ lemurro.users._t7helperAccessSets = function () {
  * Применим фильтр
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 27.09.2019
+ *
+ * @version 19.06.2020
  */
 lemurro.users.applyFilter = function () {
     var page = $('#js-page');
     var data = {};
 
-    page.find('.js-filter').find('.js-filter__element').each(function () {
-        var input = $(this);
-        var name  = input.attr('name');
+    page.find('.js-filter')
+        .find('.js-filter__element')
+        .each(function () {
+            var input = $(this);
+            var name = input.attr('name');
 
-        data[name] = input.val();
-    });
+            data[name] = input.val();
+        });
 
     page.find('.js-message__default').hide();
     page.find('.js-message__notfound').hide();
 
-    lemurro.lightajax.post(true, pathServerAPI + 'users/filter', {
-        data: data
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'users/filter',
+        {
+            data: data,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            lemurro.users.showData(result.data);
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
+            } else {
+                lemurro.users.showData(result.data);
 
-            if (result.data.count === 0) {
-                page.find('.js-message__notfound').show();
+                if (result.data.count === 0) {
+                    page.find('.js-message__notfound').show();
+                }
             }
         }
-    });
+    );
 };
+
 /**
  * Очистка фильтра
  *
@@ -8546,13 +8647,14 @@ lemurro.users.clearFilter = function () {
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.users.edit = function (id, callback) {
     lemurro.lightajax.get(true, pathServerAPI + 'users/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             var container = $('#js-user-form');
@@ -8583,17 +8685,19 @@ lemurro.users.edit = function (id, callback) {
         }
     });
 };
+
 /**
  * Список пользователей
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 27.09.2019
+ *
+ * @version 19.06.2020
  */
 lemurro.users.getData = function () {
     lemurro.lightajax.get(true, pathServerAPI + 'users', {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             lemurro.users.showData(result.data);
@@ -8606,6 +8710,7 @@ lemurro.users.getData = function () {
         }
     });
 };
+
 /**
  * Получение отмеченных ролей пользователя
  *
@@ -8647,23 +8752,30 @@ lemurro.users.getRoles = function (form) {
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.users.insert = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'users', {
-        data: data
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'users',
+        {
+            data: data,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            if (typeof callback === 'function') {
-                callback(result);
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
+            } else {
+                if (typeof callback === 'function') {
+                    callback(result);
+                }
             }
         }
-    });
+    );
 };
+
 /**
  * Заблокировать пользователя
  *
@@ -8671,7 +8783,8 @@ lemurro.users.insert = function (data, callback) {
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.users.lock = function (id, callback) {
     if (id === '1') {
@@ -8680,11 +8793,11 @@ lemurro.users.lock = function (id, callback) {
         lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/lock', {}, function (result) {
             lemurro.lightajax.preloader('hide');
 
-            if (result.hasOwnProperty('errors')) {
+            if (lemurro.hasErrors(result)) {
                 lemurro.showErrors(result.errors);
             } else {
                 var newRecord = $(users.templates.item(result.data));
-                var row       = $('#js-users__items').find('tr[data-item-id="' + result.data.id + '"]');
+                var row = $('#js-users__items').find('tr[data-item-id="' + result.data.id + '"]');
 
                 row.html(newRecord.html());
 
@@ -8697,53 +8810,61 @@ lemurro.users.lock = function (id, callback) {
         });
     }
 };
+
 /**
  * Вход под указанным пользователем
  *
  * @param {string} id ИД пользователя
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 01.11.2019
+ *
+ * @version 19.06.2020
  */
 lemurro.users.loginByUser = function (id) {
     if (id === '1') {
         swal('Внимание!', 'Входить под пользователем с id=1 запрещено', 'warning');
     } else {
-        lemurro.lightajax.post(true, pathServerAPI + 'users/login_by_user', {
-            user_id: id
-        }, function (result) {
-            lemurro.lightajax.preloader('hide');
+        lemurro.lightajax.post(
+            true,
+            pathServerAPI + 'users/login_by_user',
+            {
+                user_id: id,
+            },
+            function (result) {
+                lemurro.lightajax.preloader('hide');
 
-            if (result.hasOwnProperty('errors')) {
-                lemurro.showErrors(result.errors);
-            } else {
-                localforage.setItem('lastSessionID', lemurro.sessionID, function () {
-                    localforage.setItem('sessionID', result.data.session, function () {
-                        location.replace(location.origin);
+                if (lemurro.hasErrors(result)) {
+                    lemurro.showErrors(result.errors);
+                } else {
+                    localforage.setItem('lastSessionID', lemurro.sessionID, function () {
+                        localforage.setItem('sessionID', result.data.session, function () {
+                            location.replace(location.origin);
+                        });
                     });
-                });
+                }
             }
-        });
+        );
     }
 };
+
 /**
  * Удаление
  *
  * @param {string}   id       ИД пользователя
- * @param {string}   name     Имя пользователя
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
-lemurro.users.remove = function (id, name, callback) {
+lemurro.users.remove = function (id, callback) {
     if (id === '1') {
         swal('Внимание!', 'Пользователь с id=1 не может быть удалён', 'warning');
     } else {
         lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/remove', {}, function (result) {
             lemurro.lightajax.preloader('hide');
 
-            if (result.hasOwnProperty('errors')) {
+            if (lemurro.hasErrors(result)) {
                 lemurro.showErrors(result.errors);
             } else {
                 if (typeof callback === 'function') {
@@ -8753,6 +8874,7 @@ lemurro.users.remove = function (id, name, callback) {
         });
     }
 };
+
 /**
  * Вернуться обратно
  *
@@ -8794,23 +8916,30 @@ lemurro.users.return = function () {
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.users.save = function (data, callback) {
-    lemurro.lightajax.post(true, pathServerAPI + 'users/' + data.id, {
-        data: data
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'users/' + data.id,
+        {
+            data: data,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            if (typeof callback === 'function') {
-                callback(result);
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
+            } else {
+                if (typeof callback === 'function') {
+                    callback(result);
+                }
             }
         }
-    });
+    );
 };
+
 /**
  * Установка ролей пользователя (отметка checkbox)
  *
@@ -8839,12 +8968,15 @@ lemurro.users.setRoles = function (form, roles) {
 /**
  * Отобразим список пользователей
  *
+ * @param {Object} data
+ *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 01.11.2019
+ *
+ * @version 17.04.2020
  */
 lemurro.users.showData = function (data) {
     var container = $('#js-users__items');
-    var html      = '';
+    var html = '';
 
     for (var i in data.items) {
         if (data.items.hasOwnProperty(i)) {
@@ -8855,7 +8987,12 @@ lemurro.users.showData = function (data) {
     container.html(html);
 
     lemurro.helper.initBootstrapConfirmation(container, null);
+
+    if (users.hasOwnProperty('afterShowData') && notEmpty(users.afterShowData)) {
+        users.afterShowData(data);
+    }
 };
+
 /**
  * Покажем форму добавления
  *
@@ -8916,17 +9053,18 @@ lemurro.users.toggleFilter = function () {
  * @param {function} callback Функция обратного вызова
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.users.unlock = function (id, callback) {
     lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/unlock', {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             var newRecord = $(users.templates.item(result.data));
-            var row       = $('#js-users__items').find('tr[data-item-id="' + result.data.id + '"]');
+            var row = $('#js-users__items').find('tr[data-item-id="' + result.data.id + '"]');
 
             row.html(newRecord.html());
 
@@ -8938,17 +9076,13 @@ lemurro.users.unlock = function (id, callback) {
         }
     });
 };
+
 /**
  * Работа с наборами прав доступа
  *
- * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- */
-
-/**
- * Объект элемента
  *
- * @type {object}
+ * @version 11.05.2020
  */
 lemurro.accessSets = {};
 /**
@@ -9006,8 +9140,9 @@ lemurro.accessSets._collectData = function () {
 /**
  * Применим выбранный набор
  *
- * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
  */
 lemurro.accessSets.apply = function () {
     var select = $('#js-user__access-sets').find('select');
@@ -9017,7 +9152,7 @@ lemurro.accessSets.apply = function () {
         lemurro.lightajax.get(true, pathServerAPI + 'access_sets/' + id, {}, function (result) {
             lemurro.lightajax.preloader('hide');
 
-            if (result.hasOwnProperty('errors')) {
+            if (lemurro.hasErrors(result)) {
                 lemurro.showErrors(result.errors);
             } else {
                 lemurro.users.setRoles($('#js-user-form'), result.data.roles);
@@ -9029,6 +9164,7 @@ lemurro.accessSets.apply = function () {
         });
     }
 };
+
 /**
  * Скроем форму
  *
@@ -9044,14 +9180,15 @@ lemurro.accessSets.closeForm = function () {
  *
  * @param {string} id ИД набора
  *
- * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
  */
 lemurro.accessSets.edit = function (id) {
     lemurro.lightajax.get(true, pathServerAPI + 'access_sets/' + id, {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
             var container = $('#js-access-sets-form');
@@ -9070,19 +9207,21 @@ lemurro.accessSets.edit = function (id) {
         }
     });
 };
+
 /**
  * Список
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.accessSets.getData = function () {
     lemurro.lightajax.get(false, pathServerAPI + 'access_sets', {}, function (result) {
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
-            var containerItems  = $('#js-access-sets__items');
-            var htmlItems  = '';
+            var containerItems = $('#js-access-sets__items');
+            var htmlItems = '';
 
             for (var i in result.data.items) {
                 if (result.data.items.hasOwnProperty(i)) {
@@ -9099,54 +9238,64 @@ lemurro.accessSets.getData = function () {
         }
     });
 };
+
 /**
  * Добавление
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.accessSets.insert = function () {
     var data = lemurro.accessSets._collectData();
 
     if (Object.keys(data).length > 0) {
-        lemurro.lightajax.post(true, pathServerAPI + 'access_sets', {
-            data: data
-        }, function (result) {
-            lemurro.lightajax.preloader('hide');
+        lemurro.lightajax.post(
+            true,
+            pathServerAPI + 'access_sets',
+            {
+                data: data,
+            },
+            function (result) {
+                lemurro.lightajax.preloader('hide');
 
-            if (result.hasOwnProperty('errors')) {
-                lemurro.showErrors(result.errors);
-            } else {
-                var container = $('#js-access-sets__items');
-                container.prepend(lemurro.users._templates.accessSetsItem(result.data));
+                if (lemurro.hasErrors(result)) {
+                    lemurro.showErrors(result.errors);
+                } else {
+                    var container = $('#js-access-sets__items');
+                    container.prepend(lemurro.users._templates.accessSetsItem(result.data));
 
-                var row = container.find('tr[data-item-id="' + result.data.id + '"]');
-                lemurro.helper.initBootstrapConfirmation(row, null);
+                    var row = container.find('tr[data-item-id="' + result.data.id + '"]');
+                    lemurro.helper.initBootstrapConfirmation(row, null);
 
-                lemurro.accessSets._buildSelect();
+                    lemurro.accessSets._buildSelect();
 
-                $('#js-access-sets-form').hide();
-                $('#js-access-sets__button-add').show();
+                    $('#js-access-sets-form').hide();
+                    $('#js-access-sets__button-add').show();
+                }
             }
-        });
+        );
     }
 };
+
 /**
  * Удаление
  *
  * @param {string} id ИД набора
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.accessSets.remove = function (id) {
     lemurro.lightajax.post(true, pathServerAPI + 'access_sets/' + id + '/remove', {}, function (result) {
         lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
+        if (lemurro.hasErrors(result)) {
             lemurro.showErrors(result.errors);
         } else {
-            $('#js-access-sets__items').find('tr[data-item-id="' + result.data.id + '"]')
+            $('#js-access-sets__items')
+                .find('tr[data-item-id="' + result.data.id + '"]')
                 .remove();
 
             lemurro.accessSets._buildSelect();
@@ -9155,41 +9304,49 @@ lemurro.accessSets.remove = function (id) {
         }
     });
 };
+
 /**
  * Изменение
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 21.01.2020
+ *
+ * @version 19.06.2020
  */
 lemurro.accessSets.save = function () {
     var data = lemurro.accessSets._collectData();
 
     if (Object.keys(data).length > 0) {
-        lemurro.lightajax.post(true, pathServerAPI + 'access_sets/' + data.id, {
-            data: data
-        }, function (result) {
-            lemurro.lightajax.preloader('hide');
+        lemurro.lightajax.post(
+            true,
+            pathServerAPI + 'access_sets/' + data.id,
+            {
+                data: data,
+            },
+            function (result) {
+                lemurro.lightajax.preloader('hide');
 
-            if (result.hasOwnProperty('errors')) {
-                lemurro.showErrors(result.errors);
-            } else {
-                var newRecord = $(lemurro.users._templates.accessSetsItem(result.data));
-                var row       = $('#js-access-sets__items').find('tr[data-item-id="' + result.data.id + '"]');
+                if (lemurro.hasErrors(result)) {
+                    lemurro.showErrors(result.errors);
+                } else {
+                    var newRecord = $(lemurro.users._templates.accessSetsItem(result.data));
+                    var row = $('#js-access-sets__items').find('tr[data-item-id="' + result.data.id + '"]');
 
-                row.html(newRecord.html());
+                    row.html(newRecord.html());
 
-                lemurro.helper.initBootstrapConfirmation(row, null);
+                    lemurro.helper.initBootstrapConfirmation(row, null);
 
-                lemurro.accessSets._buildSelect();
+                    lemurro.accessSets._buildSelect();
 
-                $('#js-access-sets-form').hide();
-                $('#js-access-sets__button-add').show();
+                    $('#js-access-sets-form').hide();
+                    $('#js-access-sets__button-add').show();
 
-                swal('Выполнено', 'Запись успешно изменена', 'success');
+                    swal('Выполнено', 'Запись успешно изменена', 'success');
+                }
             }
-        });
+        );
     }
 };
+
 /**
  * Покажем форму добавления
  *
@@ -9210,19 +9367,46 @@ lemurro.accessSets.showInsertForm = function () {
     container.show();
 };
 /**
- * Работа с файлами
+ * Просмотр ключей доступа
  *
- * @version 08.01.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 11.05.2020
  */
+lemurro.authKeys = {};
+/**
+ * Список
+ *
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
+ */
+lemurro.authKeys.getData = function () {
+    var container = $('#js-auth-keys__items');
+
+    container.html('');
+
+    lemurro.lightajax.get(false, pathServerAPI + 'auth/keys', {}, function (result) {
+        if (lemurro.hasErrors(result)) {
+            lemurro.showErrors(result.errors);
+        } else {
+            if (!lemurro.authKeys.hasOwnProperty('_template')) {
+                lemurro.authKeys._template = Template7.compile($('#js-tpl-auth-keys__items').html());
+            }
+
+            container.html(lemurro.authKeys._template(result.data));
+        }
+    });
+};
 
 /**
- * Объект элемента
+ * Работа с файлами
  *
- * @type {object}
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 11.05.2020
  */
 lemurro.file = {};
-
 /**
  * Инициализация
  *
@@ -9274,7 +9458,8 @@ lemurro.file._config = function () {
  * @param {object}   options    Переопределение параметров
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 31.10.2019
+ *
+ * @version 19.06.2020
  */
 lemurro.file.bindUpload = function (btn, onComplete, options) {
     var btnContent = btn.html();
@@ -9285,62 +9470,77 @@ lemurro.file.bindUpload = function (btn, onComplete, options) {
     }
 
     // Настройки
-    var settings = $.extend({
-        button    : btn,
-        onSubmit  : function () {
-            btn.html('<i class="fas fa-spinner fa-pulse"></i> Загрузка...').prop('disabled', true); // change button text to "Uploading..."
-        },
-        onComplete: function (filename, result) {
-            btn.html(btnContent).prop('disabled', false);
+    var settings = $.extend(
+        {
+            button: btn,
+            onSubmit: function () {
+                btn.html('<i class="fas fa-spinner fa-pulse"></i> Загрузка...').prop('disabled', true); // change button text to "Uploading..."
+            },
+            onComplete: function (filename, result) {
+                btn.html(btnContent).prop('disabled', false);
 
-            if (!result) {
-                swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
+                if (!result) {
+                    swal(
+                        'Произошла ошибка',
+                        'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз',
+                        'error'
+                    );
 
-                return false;
-            }
-
-            if (result.hasOwnProperty('errors')) {
-                lemurro.showErrors(result.errors);
-            } else {
-                if (typeof onComplete === 'function') {
-                    onComplete(result.data.id, 'add', filename, btn);
-                } else {
-                    swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
+                    return false;
                 }
-            }
-        },
-        onError   : function (filename) {
-            btn.html(btnContent).prop('disabled', false);
 
-            swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
-        }
-    }, options);
+                if (lemurro.hasErrors(result)) {
+                    lemurro.showErrors(result.errors);
+                } else {
+                    if (typeof onComplete === 'function') {
+                        onComplete(result.data.id, 'add', filename, btn);
+                    } else {
+                        swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
+                    }
+                }
+            },
+            onError: function (filename) {
+                btn.html(btnContent).prop('disabled', false);
+
+                swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
+            },
+        },
+        options
+    );
 
     new ss.SimpleUpload(settings);
 };
+
 /**
  * Скачивание файла
  *
  * @param {integer|string} fileid   ИД постоянного файла или имя временного файла
  * @param {string}         filename ИД файла
  *
- * @version 15.05.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
  */
 lemurro.file.download = function (fileid, filename) {
-    lemurro.lightajax.post(true, pathServerAPI + 'file/download/prepare', {
-        fileid: fileid,
-        filename: filename
-    }, function (result) {
-        lemurro.lightajax.preloader('hide');
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'file/download/prepare',
+        {
+            fileid: fileid,
+            filename: filename,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-        if (result.hasOwnProperty('errors')) {
-            lemurro.showErrors(result.errors);
-        } else {
-            window.open(pathServerAPI + 'file/download/run?token=' + encodeURI(result.data.token), 'Download file');
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
+            } else {
+                window.open(pathServerAPI + 'file/download/run?token=' + encodeURI(result.data.token), 'Download file');
+            }
         }
-    });
+    );
 };
+
 /**
  * Удаление файла
  *
@@ -9374,4 +9574,111 @@ lemurro.file.remove = function (fileid, callback) {
             }
         }
     });
+};
+/**
+ * Профиль пользователя
+ *
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 24.04.2020
+ */
+lemurro.profile = {};
+
+/**
+ * Инициализация
+ *
+ * @type {Function}
+ *
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 24.04.2020
+ */
+lemurro.profile.init = function () {
+    Template7.global = {
+        sessionID: lemurro.sessionID,
+    };
+
+    /**
+     * Объект для хранения шаблонов
+     *
+     * @type {object}
+     */
+    lemurro.profile.templates = {
+        info: Template7.compile($('#js-tpl-profile__info').html()),
+        sessions: Template7.compile($('#js-tpl-profile__sessions').html()),
+    };
+
+    lemurro.profile.getData();
+};
+
+/**
+ * Получение информации о профиле пользователя
+ *
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
+ */
+lemurro.profile.getData = function () {
+    lemurro.lightajax.get(true, pathServerAPI + 'profile', {}, function (result) {
+        lemurro.lightajax.preloader('hide');
+
+        if (lemurro.hasErrors(result)) {
+            lemurro.showErrors(result.errors);
+        } else {
+            lemurro.profile.showData(result.data);
+        }
+    });
+};
+
+/**
+ * Сброс выбранной сессии
+ *
+ * @param {String} session
+ *
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.06.2020
+ */
+lemurro.profile.resetSession = function (session) {
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'profile/session/reset',
+        {
+            session: session,
+        },
+        function (result) {
+            lemurro.lightajax.preloader('hide');
+
+            if (lemurro.hasErrors(result)) {
+                lemurro.showErrors(result.errors);
+            } else {
+                $('#js-page')
+                    .find('.js-profile__sessions')
+                    .find('div[data-id="' + session + '"]')
+                    .remove();
+            }
+        }
+    );
+};
+
+/**
+ * Отображение информации о профиле пользователя
+ *
+ * @param {Object} data
+ *
+ * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 24.04.2020
+ */
+lemurro.profile.showData = function (data) {
+    var page = $('#js-page');
+
+    page.find('.js-profile__info').html(lemurro.profile.templates.info(lemurro.userinfo));
+    page.find('.js-profile__sessions').html(lemurro.profile.templates.sessions(data.sessions));
+
+    lemurro.helper.initBootstrapConfirmation(page, null);
+
+    if (profile.hasOwnProperty('_afterShowData') && typeof profile._afterShowData === 'function') {
+        profile._afterShowData(data);
+    }
 };
