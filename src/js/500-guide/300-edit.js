@@ -6,7 +6,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 15.08.2020
  */
 lemurro.guide.edit = function (id, callback) {
     lemurro.lightajax.get(true, pathServerAPI + 'guide/' + lemurro.guide._name + '/' + id, {}, function (result) {
@@ -23,7 +23,7 @@ lemurro.guide.edit = function (id, callback) {
             $('#js-guide__button-insert').hide();
             $('#js-guide__button-save').show();
 
-            $('#js-tab-form-button').html('<i class="fas fa-pencil-alt"></i> Редактировать');
+            $('#js-tab-form-button').html(lemurro.tabs.getTabTitle('edit'));
 
             lemurro.tabs.tabInsertEdit('show');
 
