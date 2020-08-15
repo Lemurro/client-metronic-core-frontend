@@ -10,9 +10,9 @@
         "url": "https://github.com/Lemurro/client-metronic-core-frontend.git"
     },
     "devDependencies": {
-        "bootstrap": "~4.4.1",
+        "bootstrap": "~4.5.0",
         "bootstrap-confirmation2": "~4.1.0",
-        "bowser": "~2.4.0",
+        "bowser": "~2.10.0",
         "del": "~5.1.0",
         "dimns-is-empty-js": "~1.2.1",
         "gulp": "~4.0.2",
@@ -21,12 +21,12 @@
         "gulp-rename": "~2.0.0",
         "gulp-sort": "~2.0.0",
         "gulp-uglify": "~3.0.2",
-        "jquery": "~3.4.1",
+        "jquery": "~3.5.1",
         "jquery-lightajax": "~2.2.3",
         "jquery-tablefilter": "~1.1.1",
-        "localforage": "~1.7.3",
+        "localforage": "~1.8.1",
         "navigo": "~7.1.2",
-        "qunit": "~2.9.3",
+        "qunit": "~2.10.1",
         "select2": "~4.0.13",
         "simple-ajax-uploader": "~2.6.7",
         "template7": "~1.4.2"
