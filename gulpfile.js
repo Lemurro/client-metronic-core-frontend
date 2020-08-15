@@ -7,11 +7,13 @@ const uglify   = require('gulp-uglify');    // Минификация JS
 const del      = require('del');            // Удаление файлов
 
 const cssLibs = [
-    'node_modules/jquery-lightajax/dist/jquery.lightajax.css'
+    'node_modules/jquery-lightajax/dist/jquery.lightajax.css',
+    'node_modules/select2/dist/css/select2.css',
 ];
 
 const cssLibsMin = [
-    'node_modules/jquery-lightajax/dist/jquery.lightajax.min.css'
+    'node_modules/jquery-lightajax/dist/jquery.lightajax.min.css',
+    'node_modules/select2/dist/css/select2.min.css',
 ];
 
 const jsLibs = [
@@ -22,9 +24,10 @@ const jsLibs = [
     'node_modules/jquery-tablefilter/dist/jquery.tablefilter.js',
     'node_modules/localforage/dist/localforage.js',
     'node_modules/navigo/lib/navigo.js',
+    'node_modules/select2/dist/js/select2.full.js',
     'node_modules/select2/dist/js/i18n/ru.js',
     'node_modules/simple-ajax-uploader/SimpleAjaxUploader.js',
-    'node_modules/template7/dist/template7.js'
+    'node_modules/template7/dist/template7.js',
 ];
 
 const jsLibsMin = [
@@ -35,9 +38,10 @@ const jsLibsMin = [
     'node_modules/jquery-tablefilter/dist/jquery.tablefilter.min.js',
     'node_modules/localforage/dist/localforage.min.js',
     'node_modules/navigo/lib/navigo.min.js',
+    'node_modules/select2/dist/js/select2.full.min.js',
     'node_modules/select2/dist/js/i18n/ru.js',
     'node_modules/simple-ajax-uploader/SimpleAjaxUploader.min.js',
-    'node_modules/template7/dist/template7.min.js'
+    'node_modules/template7/dist/template7.min.js',
 ];
 
 // CLEAN
