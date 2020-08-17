@@ -24,6 +24,7 @@
         "jquery": "~3.5.1",
         "jquery-lightajax": "~2.2.3",
         "jquery-tablefilter": "~1.1.1",
+        "jquery-validation": "~1.19.2",
         "localforage": "~1.8.1",
         "navigo": "~7.1.2",
         "qunit": "~2.10.1",
