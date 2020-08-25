@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 25.08.2020
  */
 lemurro.accessSets.save = function () {
     var data = lemurro.accessSets._collectData();
@@ -13,7 +13,7 @@ lemurro.accessSets.save = function () {
             true,
             pathServerAPI + 'access_sets/' + data.id,
             {
-                data: data,
+                json: JSON.stringify(data),
             },
             function (result) {
                 lemurro.lightajax.preloader('hide');
