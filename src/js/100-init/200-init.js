@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 07.08.2020
+ * @version 02.09.2020
  */
 lemurro.init = function () {
     /**
@@ -44,9 +44,6 @@ lemurro.init = function () {
     // Определяем настройки по умолчанию для Select2
     $.fn.select2.defaults.set('language', 'ru');
     $.fn.select2.defaults.set('placeholder', 'Выберите из списка');
-
-    // Ловим js-ошибки
-    //lemurro._bindJSerrors();
 
     // Инициализируем форму входа
     lemurro._initAuthForm();
