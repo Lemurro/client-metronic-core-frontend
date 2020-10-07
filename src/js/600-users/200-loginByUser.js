@@ -5,11 +5,11 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 07.10.2020
  */
 lemurro.users.loginByUser = function (id) {
     if (id === '1') {
-        swal('Внимание!', 'Входить под пользователем с id=1 запрещено', 'warning');
+        Swal.fire('Внимание!', 'Входить под пользователем с id=1 запрещено', 'warning');
     } else {
         lemurro.lightajax.post(
             true,

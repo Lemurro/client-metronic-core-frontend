@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 02.09.2020
+ * @version 07.10.2020
  */
 lemurro.init = function () {
     /**
@@ -28,17 +28,17 @@ lemurro.init = function () {
     lemurro.lightajax = new LightAjax({
         settings: {
             callbackAlert: function (title, message) {
-                swal(title, message, 'error');
-            }
+                Swal.fire(title, message, 'error');
+            },
         },
-        ajax    : {
+        ajax: {
             beforeSend: function (xhr, settings) {
                 if (!/^(HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
                     xhr.setRequestHeader('X-SESSION-ID', lemurro.sessionID);
                     xhr.setRequestHeader('X-UTC-OFFSET', moment().utcOffset());
                 }
-            }
-        }
+            },
+        },
     });
 
     // Определяем настройки по умолчанию для Select2

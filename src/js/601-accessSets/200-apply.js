@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 07.10.2020
  */
 lemurro.accessSets.apply = function () {
     var select = $('#js-user__access-sets').find('select');
@@ -20,7 +20,7 @@ lemurro.accessSets.apply = function () {
 
                 select.val(null);
 
-                swal('Выполнено', 'Успешно применён набор "' + result.data.name + '"', 'success');
+                Swal.fire('Выполнено', 'Успешно применён набор "' + result.data.name + '"', 'success');
             }
         });
     }
