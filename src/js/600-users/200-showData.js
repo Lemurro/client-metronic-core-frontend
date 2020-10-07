@@ -5,7 +5,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 17.04.2020
+ * @version 07.10.2020
  */
 lemurro.users.showData = function (data) {
     var container = $('#js-users__items');
@@ -18,6 +18,12 @@ lemurro.users.showData = function (data) {
     }
 
     container.html(html);
+
+    localforage.getItem('lastSessionID', function (err, value) {
+        if (value !== null) {
+            container.find('.js-login-by-user').hide();
+        }
+    });
 
     lemurro.helper.initBootstrapConfirmation(container, null);
 
