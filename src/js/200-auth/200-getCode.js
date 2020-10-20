@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 07.10.2020
+ * @version 08.10.2020
  */
 lemurro.auth.getCode = function () {
     var authID = $('#js-auth__get-form').find('input[name="auth_id"]').val();
@@ -24,13 +24,13 @@ lemurro.auth.getCode = function () {
             lemurro.lightajax.preloader('hide');
 
             if (lemurro.hasErrors(result)) {
-                lemurro.showErrors(result.errors);
+                lemurro.showErrors(result['errors']);
             } else {
-                if (result.data.hasOwnProperty('message')) {
-                    console.log(result.data.message, 'AuthCode');
-                }
-
                 var formCode = $('#js-auth__check-form');
+
+                if (result['data'].hasOwnProperty('message')) {
+                    formCode.find('input[name="auth_code"]').val(result['data']['message']);
+                }
 
                 formCode.find('.js-timer').show();
                 formCode.find('.js-timer__count').text('60');
