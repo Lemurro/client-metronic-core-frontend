@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 07.10.2020
+ * @version 20.10.2020
  */
 lemurro.auth.checkCode = function () {
     var authID = $('#js-auth__get-form').find('input[name="auth_id"]').val();
@@ -25,20 +25,17 @@ lemurro.auth.checkCode = function () {
     var geoip = {};
     var waiterCount = 1;
 
-    new LightAjax(null).get(
-        false,
-        'https://api.sypexgeo.net',
-        {},
-        function (result) {
+    jQuery.ajax('https://api.sypexgeo.net', {
+        method: 'GET',
+        data: {},
+        success: function (result) {
             geoip = result;
         },
-        {
-            complete: function () {
-                waiterCount = 0;
-            },
-            error: function () {},
-        }
-    );
+        complete: function () {
+            waiterCount = 0;
+        },
+        error: function () {},
+    });
 
     var waiter = setInterval(function () {
         if (waiterCount === 0) {
@@ -67,10 +64,10 @@ lemurro.auth.checkCode = function () {
                     if (lemurro.hasErrors(result)) {
                         $('#js-auth__check-form').find('input[name="auth_code"]').val('');
 
-                        lemurro.showErrors(result.errors);
+                        lemurro.showErrors(result['errors']);
                     } else {
-                        localforage.setItem('sessionID', result.data.session, function () {
-                            lemurro.sessionID = result.data.session;
+                        localforage.setItem('sessionID', result['data']['session'], function () {
+                            lemurro.sessionID = result['data']['session'];
                             lemurro.authScreen('hide');
                             lemurro.auth.check();
                         });
