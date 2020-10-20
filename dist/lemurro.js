@@ -7715,20 +7715,17 @@ lemurro.auth.checkCode = function () {
     var geoip = {};
     var waiterCount = 1;
 
-    new LightAjax(null).get(
-        false,
-        'https://api.sypexgeo.net',
-        {},
-        function (result) {
+    jQuery.ajax('https://api.sypexgeo.net', {
+        method: 'GET',
+        data: {},
+        success: function (result) {
             geoip = result;
         },
-        {
-            complete: function () {
-                waiterCount = 0;
-            },
-            error: function () {},
-        }
-    );
+        complete: function () {
+            waiterCount = 0;
+        },
+        error: function () {},
+    });
 
     var waiter = setInterval(function () {
         if (waiterCount === 0) {
