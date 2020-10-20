@@ -22,58 +22,36 @@ lemurro.auth.checkCode = function () {
     }
 
     var browser = bowser.getParser(window.navigator.userAgent);
-    var geoip = {};
-    var waiterCount = 1;
 
-    jQuery.ajax('https://api.sypexgeo.net', {
-        method: 'GET',
-        data: {},
-        success: function (result) {
-            geoip = result;
+    lemurro.lightajax.post(
+        true,
+        pathServerAPI + 'auth/code',
+        {
+            auth_id: authID,
+            auth_code: authCode,
+            device_info: {
+                uuid: 'WebApp',
+                platform: browser.parsedResult.os.name,
+                version: browser.parsedResult.os.version,
+                manufacturer: browser.parsedResult.browser.name,
+                model: browser.parsedResult.browser.version,
+            },
+            geoip: lemurro.auth._geoip,
         },
-        complete: function () {
-            waiterCount = 0;
-        },
-        error: function () {},
-    });
+        function (result) {
+            lemurro.lightajax.preloader('hide');
 
-    var waiter = setInterval(function () {
-        if (waiterCount === 0) {
-            clearInterval(waiter);
+            if (lemurro.hasErrors(result)) {
+                $('#js-auth__check-form').find('input[name="auth_code"]').val('');
 
-            console.log(geoip);
-
-            lemurro.lightajax.post(
-                true,
-                pathServerAPI + 'auth/code',
-                {
-                    auth_id: authID,
-                    auth_code: authCode,
-                    device_info: {
-                        uuid: 'WebApp',
-                        platform: browser.parsedResult.os.name,
-                        version: browser.parsedResult.os.version,
-                        manufacturer: browser.parsedResult.browser.name,
-                        model: browser.parsedResult.browser.version,
-                    },
-                    geoip: geoip,
-                },
-                function (result) {
-                    lemurro.lightajax.preloader('hide');
-
-                    if (lemurro.hasErrors(result)) {
-                        $('#js-auth__check-form').find('input[name="auth_code"]').val('');
-
-                        lemurro.showErrors(result['errors']);
-                    } else {
-                        localforage.setItem('sessionID', result['data']['session'], function () {
-                            lemurro.sessionID = result['data']['session'];
-                            lemurro.authScreen('hide');
-                            lemurro.auth.check();
-                        });
-                    }
-                }
-            );
+                lemurro.showErrors(result['errors']);
+            } else {
+                localforage.setItem('sessionID', result['data']['session'], function () {
+                    lemurro.sessionID = result['data']['session'];
+                    lemurro.authScreen('hide');
+                    lemurro.auth.check();
+                });
+            }
         }
-    }, 500);
+    );
 };

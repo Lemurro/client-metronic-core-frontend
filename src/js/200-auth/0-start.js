@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 11.05.2020
+ * @version 20.10.2020
  */
 lemurro.auth = {};
 
@@ -13,3 +13,10 @@ lemurro.auth = {};
  * @type {int|null}
  */
 lemurro.auth._timerID = null;
+
+/**
+ * Гео-информация
+ *
+ * @type {object}
+ */
+lemurro.auth._geoip = {};
