@@ -15745,16 +15745,15 @@ lemurro._bindForAll = function () {
 /**
  * Подключим Inputmask
  *
- * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 29.11.2020
  */
 lemurro._bindInputmask = function () {
     $('#js-page').find('.js-mask').each(function () {
-        var element = $(this);
-
         Inputmask({
-            'mask': element.attr('data-mask')
-        }).mask(element);
+            'mask': $(this).attr('data-mask')
+        }).mask(this);
     });
 };
 /**
@@ -15781,7 +15780,8 @@ lemurro._bindTableFilter = function () {
  * Инициируем форму входа
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 17.01.2020
+ *
+ * @version 29.11.2020
  */
 lemurro._initAuthForm = function () {
     var authForm  = $('#js-auth');
@@ -15819,19 +15819,15 @@ lemurro._initAuthForm = function () {
         });
 
     authForm.find('.js-code-mask').each(function () {
-        var element = $(this);
-
         Inputmask({
-            'mask': '9999'
-        }).mask(element);
+            mask: '9999',
+        }).mask(this);
     });
 
     authForm.find('.js-phone-mask').each(function () {
-        var element = $(this);
-
         Inputmask({
-            'mask': '+7 (999) 999-99-99'
-        }).mask(element);
+            mask: '+7 (999) 999-99-99',
+        }).mask(this);
     });
 };
 /**
