@@ -15745,16 +15745,15 @@ lemurro._bindForAll = function () {
 /**
  * Подключим Inputmask
  *
- * @version 11.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 29.11.2020
  */
 lemurro._bindInputmask = function () {
     $('#js-page').find('.js-mask').each(function () {
-        var element = $(this);
-
         Inputmask({
-            'mask': element.attr('data-mask')
-        }).mask(element);
+            'mask': $(this).attr('data-mask')
+        }).mask(this);
     });
 };
 /**
@@ -15781,7 +15780,8 @@ lemurro._bindTableFilter = function () {
  * Инициируем форму входа
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 17.01.2020
+ *
+ * @version 29.11.2020
  */
 lemurro._initAuthForm = function () {
     var authForm  = $('#js-auth');
@@ -15819,19 +15819,15 @@ lemurro._initAuthForm = function () {
         });
 
     authForm.find('.js-code-mask').each(function () {
-        var element = $(this);
-
         Inputmask({
-            'mask': '9999'
-        }).mask(element);
+            mask: '9999',
+        }).mask(this);
     });
 
     authForm.find('.js-phone-mask').each(function () {
-        var element = $(this);
-
         Inputmask({
-            'mask': '+7 (999) 999-99-99'
-        }).mask(element);
+            mask: '+7 (999) 999-99-99',
+        }).mask(this);
     });
 };
 /**
@@ -16456,11 +16452,12 @@ lemurro.helper.isRole = function (page, access, callbackSuccess, callbackFail) {
 /**
  * Преобразование серверного времени в локальное и возврат строки указанного формата
  *
- * @param {string} datetime Дата и время в формате "ГГГГ-ММ-ДД ЧЧ:ММ:СС"
+ * @param {string} datetime Дата и время UTC в формате "ГГГГ-ММ-ДД ЧЧ:ММ:СС"
  * @param {string} format   Возвращаемый формат (Moment.js)
  *
- * @version 13.12.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 13.11.2020
  */
 lemurro.helper.localTime = function (datetime, format) {
     if (isEmpty(datetime) || isEmpty(format)) {
@@ -16576,24 +16573,42 @@ lemurro.tabs.showTab = function (tabID) {
  * Скрыть\Показать вторую вкладку
  *
  * @param {string} action Действие (show|hide)
+ * @param {string} tabFormName Имя таба с формой или null, тогда будет: tab-form
+ * @param {string} tabPrevName Имя предыдущего таба или null, тогда будет: tab-list
  *
- * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 19.11.2020
  */
-lemurro.tabs.tabInsertEdit = function (action) {
-    var tabsLinks    = $('#js-tabs__links');
+lemurro.tabs.tabInsertEdit = function (action, tabFormName, tabPrevName) {
+    var tabsLinks = $('#js-tabs__links');
     var tabsContents = $('#js-tabs__contents');
 
+    if (isEmpty(tabFormName)) {
+        tabFormName = 'tab-form';
+    }
+
+    if (isEmpty(tabPrevName)) {
+        tabPrevName = 'tab-list';
+    }
+
     if (action === 'show') {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().show();
-        tabsContents.find('#tab-form').addClass('active show');
-        lemurro.tabs.showTab('tab-form');
+        tabsLinks
+            .find('a[data-target="#' + tabFormName + '"]')
+            .parent()
+            .show();
+        tabsContents.find('#' + tabFormName).addClass('active show');
+        lemurro.tabs.showTab(tabFormName);
     } else {
-        tabsLinks.find('a[data-target="#tab-form"]').parent().hide();
-        tabsContents.find('#tab-form').removeClass('active show');
-        lemurro.tabs.showTab('tab-list');
+        tabsLinks
+            .find('a[data-target="#' + tabFormName + '"]')
+            .parent()
+            .hide();
+        tabsContents.find('#' + tabFormName).removeClass('active show');
+        lemurro.tabs.showTab(tabPrevName);
     }
 };
+
 /**
  * Операции со справочниками
  *
