@@ -13,6 +13,8 @@ lemurro._showElementsByRoles = function () {
     } else {
         for (var pageID in lemurro.userinfo.roles) {
             if (lemurro.userinfo.roles.hasOwnProperty(pageID)) {
+                body.find('.js-role__' + pageID + '--any').removeClass('d-none');
+
                 for (var i in lemurro.userinfo.roles[pageID]) {
                     if (lemurro.userinfo.roles[pageID].hasOwnProperty(i)) {
                         var access = lemurro.userinfo.roles[pageID][i];
