@@ -14,33 +14,38 @@ lemurro.auth.getCode = function () {
         return;
     }
 
-    lemurro.lightajax.get(
-        true,
-        pathServerAPI + 'auth/code',
-        {
-            auth_id: authID,
-        },
-        function (result) {
-            lemurro.lightajax.preloader('hide');
+    var callback = function () {
+        lemurro.lightajax.get(
+            true,
+            pathServerAPI + 'auth/code',
+            {
+                auth_id: authID,
+                ip: lemurro.auth._geoip.hasOwnProperty('ip') ? lemurro.auth._geoip['ip'] : '',
+            },
+            function (result) {
+                lemurro.lightajax.preloader('hide');
 
-            if (lemurro.hasErrors(result)) {
-                lemurro.showErrors(result.errors);
-            } else {
-                if (result.data.hasOwnProperty('message')) {
-                    console.log(result.data.message, 'AuthCode');
+                if (lemurro.hasErrors(result)) {
+                    lemurro.showErrors(result['errors']);
+                } else {
+                    var formCode = $('#js-auth__check-form');
+
+                    if (result['data'].hasOwnProperty('message')) {
+                        formCode.find('input[name="auth_code"]').val(result['data']['message']);
+                    }
+
+                    formCode.find('.js-timer').show();
+                    formCode.find('.js-timer__count').text('60');
+                    formCode.find('.js-resend').hide();
+
+                    lemurro.auth._runTimer();
+
+                    $('#js-auth__get-form').hide();
+                    formCode.show();
                 }
-
-                var formCode = $('#js-auth__check-form');
-
-                formCode.find('.js-timer').show();
-                formCode.find('.js-timer__count').text('60');
-                formCode.find('.js-resend').hide();
-
-                lemurro.auth._runTimer();
-
-                $('#js-auth__get-form').hide();
-                formCode.show();
             }
-        }
-    );
+        );
+    };
+
+    lemurro.auth._getGeoIP(callback);
 };

@@ -13,3 +13,10 @@ lemurro.auth = {};
  * @type {int|null}
  */
 lemurro.auth._timerID = null;
+
+/**
+ * Гео-информация
+ *
+ * @type {object}
+ */
+lemurro.auth._geoip = {};
