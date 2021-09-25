@@ -19,6 +19,12 @@ lemurro.users.showData = function (data) {
 
     container.html(html);
 
+    localforage.getItem('lastSessionID', function (err, value) {
+        if (value !== null) {
+            container.find('.js-login-by-user').hide();
+        }
+    });
+
     lemurro.helper.initBootstrapConfirmation(container, null);
 
     if (users.hasOwnProperty('afterShowData') && notEmpty(users.afterShowData)) {

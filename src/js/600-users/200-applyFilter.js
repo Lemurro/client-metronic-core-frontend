@@ -18,7 +18,6 @@ lemurro.users.applyFilter = function () {
             data[name] = input.val();
         });
 
-    page.find('.js-message__default').hide();
     page.find('.js-message__notfound').hide();
 
     lemurro.lightajax.post(
