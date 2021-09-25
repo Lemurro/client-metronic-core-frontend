@@ -1,20 +1,20 @@
-const gulp     = require('gulp');           // Сам Gulp JS
-const cleanCSS = require('gulp-clean-css'); // Минификация CSS
-const concat   = require('gulp-concat');    // Склейка файлов
-const rename   = require('gulp-rename');    // Переименование файлов
-const sort     = require('gulp-sort');      // Сортировка списка файлов
-const uglify   = require('gulp-uglify');    // Минификация JS
-const del      = require('del');            // Удаление файлов
+var gulp = require('gulp');           // Сам Gulp JS
+var cleanCSS = require('gulp-clean-css'); // Минификация CSS
+var concat = require('gulp-concat');    // Склейка файлов
+var rename = require('gulp-rename');    // Переименование файлов
+var sort = require('gulp-sort');      // Сортировка списка файлов
+var uglify = require('gulp-uglify');    // Минификация JS
+var del = require('del');            // Удаление файлов
 
-const cssLibs = [
-    'node_modules/jquery-lightajax/dist/jquery.lightajax.css'
+var cssLibs = [
+    'node_modules/jquery-lightajax/dist/jquery.lightajax.css',
 ];
 
-const cssLibsMin = [
-    'node_modules/jquery-lightajax/dist/jquery.lightajax.min.css'
+var cssLibsMin = [
+    'node_modules/jquery-lightajax/dist/jquery.lightajax.min.css',
 ];
 
-const jsLibs = [
+var jsLibs = [
     'node_modules/bootstrap-confirmation2/dist/bootstrap-confirmation.js',
     'node_modules/bowser/bundled.js',
     'node_modules/dimns-is-empty-js/dist/isEmpty.js',
@@ -24,10 +24,10 @@ const jsLibs = [
     'node_modules/navigo/lib/navigo.js',
     'node_modules/select2/dist/js/i18n/ru.js',
     'node_modules/simple-ajax-uploader/SimpleAjaxUploader.js',
-    'node_modules/template7/dist/template7.js'
+    'node_modules/template7/dist/template7.js',
 ];
 
-const jsLibsMin = [
+var jsLibsMin = [
     'node_modules/bootstrap-confirmation2/dist/bootstrap-confirmation.min.js',
     'node_modules/bowser/bundled.js',
     'node_modules/dimns-is-empty-js/dist/isEmpty.min.js',
@@ -37,21 +37,19 @@ const jsLibsMin = [
     'node_modules/navigo/lib/navigo.min.js',
     'node_modules/select2/dist/js/i18n/ru.js',
     'node_modules/simple-ajax-uploader/SimpleAjaxUploader.min.js',
-    'node_modules/template7/dist/template7.min.js'
+    'node_modules/template7/dist/template7.min.js',
 ];
 
 // CLEAN
 
 function clean() {
-    const files = [
+    return del([
         'dist/core.css',
         'dist/core.min.css',
         'dist/core.js',
-        'dist/core.min.js'
-    ];
-
-    return del(files, {
-        force: true
+        'dist/core.min.js',
+    ], {
+        force: true,
     });
 }
 
