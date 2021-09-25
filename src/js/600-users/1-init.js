@@ -19,6 +19,7 @@ lemurro.users.init = function () {
     };
 
     lemurro.users._initRoles();
+    lemurro.users._initEmailField();
     users.init();
     lemurro.accessSets.getData();
 };
