@@ -6,6 +6,8 @@
  */
 lemurro._t7helperDecimal = function () {
     Template7.registerHelper('lemurrodecimal', function (value, precision) {
-        return lemurro.helper.decimal(value, precision);
+        var result = lemurro.helper.decimal(value, precision);
+
+        return result.toFixed(2);
     });
 };
