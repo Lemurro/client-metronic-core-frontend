@@ -20,7 +20,7 @@ lemurro.users.showInsertForm = function (callback) {
     $('#js-user__button-insert').show();
     $('#js-user__button-save').hide();
 
-    $('#js-tab-form-button').html('<i class="fas fa-plus"></i> Добавить');
+    $('#js-tab-form-button').html(lemurro.tabs.getTabTitle('add'));
 
     lemurro.tabs.tabInsertEdit('show');
 
