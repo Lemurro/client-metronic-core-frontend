@@ -6,19 +6,32 @@
  * @version 19.06.2020
  */
 lemurro.authKeys.getData = function () {
-    var container = $('#js-auth-keys__items');
+    var container = $('#js-auth-keys');
 
-    container.html('');
+    var message = container.find('.js-auth-keys__message');
+    var table = container.find('.js-auth-keys__table');
+    var items = container.find('.js-auth-keys__items');
 
-    lemurro.lightajax.get(false, pathServerAPI + 'auth/keys', {}, function (result) {
+    message.hide();
+    table.hide();
+    items.html('');
+
+    lemurro.lightajax.get(true, pathServerAPI + 'auth/keys', {}, function (result) {
+        lemurro.lightajax.preloader('hide');
+
         if (lemurro.hasErrors(result)) {
-            lemurro.showErrors(result.errors);
+            lemurro.showErrors(result['errors']);
         } else {
-            if (!lemurro.authKeys.hasOwnProperty('_template')) {
-                lemurro.authKeys._template = Template7.compile($('#js-tpl-auth-keys__items').html());
-            }
+            if (result['data'].length > 0) {
+                if (!lemurro.authKeys.hasOwnProperty('_template')) {
+                    lemurro.authKeys._template = Template7.compile($('#js-tpl-auth-keys__items').html());
+                }
 
-            container.html(lemurro.authKeys._template(result.data));
+                table.show();
+                items.html(lemurro.authKeys._template(result['data']));
+            } else {
+                message.show();
+            }
         }
     });
 };
