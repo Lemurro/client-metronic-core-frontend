@@ -2,9 +2,6 @@
  * Наполним список прав доступа для фильтра
  *
  * @param {object} groupedListRoles
- *
- * @author  Дмитрий Щербаков <atomcms@ya.ru>
- * @version 30.10.2019
  */
 lemurro.users._setFilterListRoles = function (groupedListRoles) {
     var html    = '';
@@ -38,6 +35,9 @@ lemurro.users._setFilterListRoles = function (groupedListRoles) {
 
             // Сортируем элементы внутри групп
             items.sort(compare);
+
+            // Сам раздел тоже можно выбрать
+            html += '<option value="' + items[0].roleName + '|!any!">' + groupName + ': Любой доступ в этом разделе</option>';
 
             for (var j in items) {
                 if (items.hasOwnProperty(j)) {
