@@ -1,8 +1,9 @@
 /**
  * Инициализация
  *
- * @version 05.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 18.08.2020
  */
 lemurro.users.init = function () {
     lemurro.users._t7helperAccessSets();

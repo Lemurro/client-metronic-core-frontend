@@ -6,14 +6,14 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 25.08.2020
  */
 lemurro.users.save = function (data, callback) {
     lemurro.lightajax.post(
         true,
         pathServerAPI + 'users/' + data.id,
         {
-            data: data,
+            json: JSON.stringify(data),
         },
         function (result) {
             lemurro.lightajax.preloader('hide');

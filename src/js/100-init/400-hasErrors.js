@@ -7,7 +7,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 20.10.2020
  */
 lemurro.hasErrors = function (result) {
     return result.hasOwnProperty('errors');

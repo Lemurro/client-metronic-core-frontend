@@ -10,26 +10,36 @@
  * @param {function} callbackConfirm    Функция при нажатии confirmButton
  * @param {function} callbackCancel     Функция при нажатии cancelButton
  *
- * @version 09.05.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 07.10.2020
  */
-lemurro.helper.showConfirm = function (title, content, confirmButtonText, cancelButtonText, callbackOpen, callbackPreConfirm, callbackConfirm, callbackCancel) {
-    swal({
-        title             : title,
-        html              : content,
-        type              : 'question',
-        buttonsStyling    : false,
-        focusConfirm      : false,
-        allowOutsideClick : false,
-        allowEscapeKey    : false,
-        allowEnterKey     : false,
-        showCancelButton  : true,
-        confirmButtonText : confirmButtonText,
-        cancelButtonText  : cancelButtonText,
+lemurro.helper.showConfirm = function (
+    title,
+    content,
+    confirmButtonText,
+    cancelButtonText,
+    callbackOpen,
+    callbackPreConfirm,
+    callbackConfirm,
+    callbackCancel
+) {
+    Swal.fire({
+        title: title,
+        html: content,
+        type: 'question',
+        buttonsStyling: false,
+        focusConfirm: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
+        showCancelButton: true,
+        confirmButtonText: confirmButtonText,
+        cancelButtonText: cancelButtonText,
         confirmButtonClass: 'btn btn-success',
-        cancelButtonClass : 'btn btn-danger',
-        onOpen            : callbackOpen,
-        preConfirm        : callbackPreConfirm
+        cancelButtonClass: 'btn btn-danger',
+        onOpen: callbackOpen,
+        preConfirm: callbackPreConfirm,
     }).then(function (result) {
         if (result.value) {
             if (typeof callbackConfirm === 'function') {

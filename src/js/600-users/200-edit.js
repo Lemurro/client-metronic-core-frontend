@@ -6,7 +6,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 07.10.2020
  */
 lemurro.users.edit = function (id, callback) {
     lemurro.lightajax.get(true, pathServerAPI + 'users/' + id, {}, function (result) {
@@ -23,7 +23,7 @@ lemurro.users.edit = function (id, callback) {
             if (id === '1') {
                 container.find('.js-user-id-1').prop('disabled', true);
 
-                swal('Внимание!', 'У данного пользователя некоторые поля запрещены к изменению', 'warning');
+                Swal.fire('Внимание!', 'У данного пользователя некоторые поля запрещены к изменению', 'warning');
             } else {
                 container.find('.js-user-id-1').prop('disabled', false);
             }

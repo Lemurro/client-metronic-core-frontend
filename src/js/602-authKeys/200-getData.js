@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 17.08.2020
  */
 lemurro.authKeys.getData = function () {
     var container = $('#js-auth-keys');

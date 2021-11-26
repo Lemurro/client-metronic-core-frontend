@@ -34,29 +34,30 @@ lemurro.showErrors = function (errors) {
  * @param {string} errCode  Код ошибки
  * @param {string} errTitle Текст ошибки
  *
- * @version 26.10.2018
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 07.10.2020
  */
 lemurro._showError = function (errCode, errTitle) {
     var title = 'Неизвестная ошибка';
-    var code  = 'error';
+    var code = 'error';
 
     switch (errCode) {
         case 'danger':
-            code  = 'error';
+            code = 'error';
             title = 'Критическая ошибка';
             break;
 
         case 'warning':
-            code  = 'warning';
+            code = 'warning';
             title = 'Внимание!';
             break;
 
         case 'info':
-            code  = 'info';
+            code = 'info';
             title = 'Информация';
             break;
     }
 
-    swal(title, errTitle, code);
+    Swal.fire(title, errTitle, code);
 };

@@ -1,8 +1,9 @@
 /**
  * Покажем скрытые элементы в зависимости от прав доступа
  *
- * @version 10.06.2019
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
+ *
+ * @version 20.10.2020
  */
 lemurro._showElementsByRoles = function () {
     var body = $('body');

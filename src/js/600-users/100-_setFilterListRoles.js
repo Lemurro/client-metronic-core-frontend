@@ -33,6 +33,9 @@ lemurro.users._setFilterListRoles = function (groupedListRoles) {
 
             html += '<optgroup label="' + groupName + '">';
 
+            // Сам раздел тоже можно выбрать
+            html += '<option value="' + items[0].roleName + '|!any!">' + groupName + ': Любой доступ в этом разделе</option>';
+
             // Сортируем элементы внутри групп
             items.sort(compare);
 

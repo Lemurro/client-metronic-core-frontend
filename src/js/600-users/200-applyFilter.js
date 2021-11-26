@@ -1,9 +1,7 @@
 /**
- * Применим фильтр
- *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 07.10.2020
  */
 lemurro.users.applyFilter = function () {
     var page = $('#js-page');
@@ -24,7 +22,7 @@ lemurro.users.applyFilter = function () {
         true,
         pathServerAPI + 'users/filter',
         {
-            data: data,
+            json: JSON.stringify(data),
         },
         function (result) {
             lemurro.lightajax.preloader('hide');

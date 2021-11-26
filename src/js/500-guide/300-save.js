@@ -6,14 +6,14 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 19.06.2020
+ * @version 07.10.2020
  */
 lemurro.guide.save = function (data, callback) {
     lemurro.lightajax.post(
         true,
         pathServerAPI + 'guide/' + lemurro.guide._name + '/' + data.id,
         {
-            data: data,
+            json: JSON.stringify(data),
         },
         function (result) {
             lemurro.lightajax.preloader('hide');
@@ -33,7 +33,7 @@ lemurro.guide.save = function (data, callback) {
 
                     lemurro.tabs.tabInsertEdit('hide');
 
-                    swal('Выполнено', 'Запись успешно изменена', 'success');
+                    Swal.fire('Выполнено', 'Запись успешно изменена', 'success');
                 }
             }
         }
