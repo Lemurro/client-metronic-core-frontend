@@ -6,11 +6,11 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 07.10.2020
+ * @version 19.06.2020
  */
 lemurro.users.lock = function (id, callback) {
     if (id === '1') {
-        Swal.fire('Внимание!', 'Блокировка пользователя с id=1 запрещена', 'warning');
+        swal('Внимание!', 'Блокировка пользователя с id=1 запрещена', 'warning');
     } else {
         lemurro.lightajax.post(true, pathServerAPI + 'users/' + id + '/lock', {}, function (result) {
             lemurro.lightajax.preloader('hide');

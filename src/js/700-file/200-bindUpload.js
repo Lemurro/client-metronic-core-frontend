@@ -7,7 +7,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 07.10.2020
+ * @version 19.06.2020
  */
 lemurro.file.bindUpload = function (btn, onComplete, options) {
     var btnContent = btn.html();
@@ -28,7 +28,7 @@ lemurro.file.bindUpload = function (btn, onComplete, options) {
                 btn.html(btnContent).prop('disabled', false);
 
                 if (!result) {
-                    Swal.fire(
+                    swal(
                         'Произошла ошибка',
                         'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз',
                         'error'
@@ -43,22 +43,14 @@ lemurro.file.bindUpload = function (btn, onComplete, options) {
                     if (typeof onComplete === 'function') {
                         onComplete(result.data.id, 'add', filename, btn);
                     } else {
-                        Swal.fire(
-                            'Выполнено',
-                            'Файл <strong>' + filename + '</strong>' + ' успешно загружен',
-                            'success'
-                        );
+                        swal('Выполнено', 'Файл <strong>' + filename + '</strong>' + ' успешно загружен', 'success');
                     }
                 }
             },
             onError: function (filename) {
                 btn.html(btnContent).prop('disabled', false);
 
-                Swal.fire(
-                    'Произошла ошибка',
-                    'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз',
-                    'error'
-                );
+                swal('Произошла ошибка', 'Не удалось загрузить файл "' + filename + '", попробуйте ещё раз', 'error');
             },
         },
         options

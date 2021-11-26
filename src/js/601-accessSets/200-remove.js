@@ -5,7 +5,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 07.10.2020
+ * @version 19.06.2020
  */
 lemurro.accessSets.remove = function (id) {
     lemurro.lightajax.post(true, pathServerAPI + 'access_sets/' + id + '/remove', {}, function (result) {
@@ -20,7 +20,7 @@ lemurro.accessSets.remove = function (id) {
 
             lemurro.accessSets._buildSelect();
 
-            Swal.fire('Выполнено', 'Запись успешно удалена', 'success');
+            swal('Выполнено', 'Запись успешно удалена', 'success');
         }
     });
 };

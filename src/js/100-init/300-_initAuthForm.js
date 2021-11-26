@@ -2,8 +2,7 @@
  * Инициируем форму входа
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
- *
- * @version 29.11.2020
+ * @version 17.01.2020
  */
 lemurro._initAuthForm = function () {
     var authForm  = $('#js-auth');
@@ -41,14 +40,18 @@ lemurro._initAuthForm = function () {
         });
 
     authForm.find('.js-code-mask').each(function () {
+        var element = $(this);
+
         Inputmask({
-            mask: '9999',
-        }).mask(this);
+            'mask': '9999'
+        }).mask(element);
     });
 
     authForm.find('.js-phone-mask').each(function () {
+        var element = $(this);
+
         Inputmask({
-            mask: '+7 (999) 999-99-99',
-        }).mask(this);
+            'mask': '+7 (999) 999-99-99'
+        }).mask(element);
     });
 };

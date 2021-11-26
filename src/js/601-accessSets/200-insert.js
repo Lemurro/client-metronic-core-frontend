@@ -3,7 +3,7 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 25.08.2020
+ * @version 19.06.2020
  */
 lemurro.accessSets.insert = function () {
     var data = lemurro.accessSets._collectData();
@@ -13,7 +13,7 @@ lemurro.accessSets.insert = function () {
             true,
             pathServerAPI + 'access_sets',
             {
-                json: JSON.stringify(data),
+                data: data,
             },
             function (result) {
                 lemurro.lightajax.preloader('hide');

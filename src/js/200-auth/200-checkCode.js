@@ -3,20 +3,20 @@
  *
  * @author  Дмитрий Щербаков <atomcms@ya.ru>
  *
- * @version 20.10.2020
+ * @version 19.06.2020
  */
 lemurro.auth.checkCode = function () {
     var authID = $('#js-auth__get-form').find('input[name="auth_id"]').val();
     var authCode = $('#js-auth__check-form').find('input[name="auth_code"]').val();
 
     if (isEmpty(authID)) {
-        Swal.fire('Внимание!', 'Необходимо указать логин', 'warning');
+        swal('Внимание!', 'Необходимо указать логин', 'warning');
 
         return;
     }
 
     if (isEmpty(authCode)) {
-        Swal.fire('Внимание!', 'Необходимо указать код для входа', 'warning');
+        swal('Внимание!', 'Необходимо указать код для входа', 'warning');
 
         return;
     }
