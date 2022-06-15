@@ -4,7 +4,7 @@
  * @param {string|number} value Строка или число
  * @param {number} precision Точность результата (по умолчанию: 2)
  *
- * @return {number}
+ * @return {string}
  */
 lemurro.helper.digitGroups = function (value, precision) {
     if (typeof value === 'string') {
@@ -12,11 +12,11 @@ lemurro.helper.digitGroups = function (value, precision) {
     }
 
     if (isEmpty(value)) {
-        return 0;
+        return String(0);
     }
 
     if (typeof value !== 'number') {
-        return 0;
+        return String(0);
     }
 
     if (typeof precision !== 'number' || isNaN(precision)) {
