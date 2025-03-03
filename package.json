@@ -10,7 +10,7 @@
         "url": "https://github.com/Lemurro/client-metronic-core-frontend.git"
     },
     "devDependencies": {
-        "bootstrap": "4.6.1",
+        "bootstrap": "5.0.0",
         "bootstrap-confirmation2": "4.2.1",
         "bowser": "2.11.0",
         "del": "6.0.0",
